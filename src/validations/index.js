@@ -108,6 +108,53 @@ const overtimeRejectSchema = Joi.object({
   rejectionReason: Joi.string().min(3).max(300).required(),
 });
 
+// Insights
+const createInsightSchema = Joi.object({
+  title: Joi.string().min(3).max(200).required(),
+  category: Joi.string().min(2).max(100).required(),
+  industry: Joi.string().min(2).max(100).required(),
+  summary: Joi.string().min(10).max(2000).required(),
+  sections: Joi.array().optional(),
+  future_predictions: Joi.array().items(Joi.string()).optional(),
+  recommendations: Joi.array().items(Joi.string()).optional(),
+  key_takeaways: Joi.array().items(Joi.string()).optional(),
+  tags: Joi.array().items(Joi.string()).optional(),
+  author: Joi.string().max(100).optional().allow('', null),
+  publication_date: Joi.date().iso().optional().allow(null),
+  target_audience: Joi.array().items(Joi.string()).optional(),
+  priority_level: Joi.string().valid('High', 'Medium', 'Low').optional(),
+  strategic_impact: Joi.string().valid('High', 'Medium', 'Low').optional(),
+});
+
+const updateInsightSchema = createInsightSchema.fork(
+  ['title', 'category', 'industry', 'summary'],
+  (f) => f.optional()
+);
+
+// Case Studies & Our Work share the same shape
+const caseStudyBodySchema = Joi.object({
+  title: Joi.string().min(3).max(200).required(),
+  clientName: Joi.string().max(150).optional().allow('', null),
+  industry: Joi.string().max(100).optional().allow('', null),
+  year: Joi.string().max(4).optional().allow('', null),
+  status: Joi.string().valid('draft', 'published', 'archived').optional(),
+  hero: Joi.object().optional(),
+  overview: Joi.object().optional(),
+  brief: Joi.object().optional(),
+  challenge: Joi.object().optional(),
+  solution: Joi.object().optional(),
+  technologyStack: Joi.array().optional(),
+  features: Joi.array().optional(),
+  results: Joi.array().optional(),
+  testimonials: Joi.array().optional(),
+  // URL-based image helpers (optional)
+  bannerImageUrl: Joi.string().uri().optional().allow('', null),
+  logoUrl: Joi.string().uri().optional().allow('', null),
+  galleryUrls: Joi.alternatives().try(Joi.array().items(Joi.string().uri()), Joi.string()).optional(),
+});
+
+const updateCaseStudySchema = caseStudyBodySchema.fork(['title'], (f) => f.optional());
+
 module.exports = {
   validate,
   loginSchema,
@@ -123,4 +170,8 @@ module.exports = {
   attendanceRejectSchema,
   overtimeRequestSchema,
   overtimeRejectSchema,
+  createInsightSchema,
+  updateInsightSchema,
+  caseStudyBodySchema,
+  updateCaseStudySchema,
 };

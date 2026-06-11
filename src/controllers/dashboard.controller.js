@@ -14,7 +14,7 @@ const adminDashboard = asyncHandler(async (req, res) => {
 
 const employeeDashboard = asyncHandler(async (req, res) => {
   const data = await dashboardService.getEmployeeDashboard(req.user._id);
-  sendSuccess(res, 'Employee dashboard fetched', data);
+  sendSuccess(res, 'Employee dashboard fetched successfully', data);
 });
 
 module.exports = { superAdminDashboard, adminDashboard, employeeDashboard };

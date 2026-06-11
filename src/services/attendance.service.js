@@ -122,10 +122,11 @@ const getMonthlyAttendance = async (employeeId, year, month) => {
     }
   }
 
-  const present = records.filter((r) => r.attendanceStatus === ATTENDANCE_STATUS.PRESENT).length;
+  const present = records.filter((r) => r.approvalStatus === APPROVAL_STATUS.APPROVED && r.attendanceStatus === ATTENDANCE_STATUS.PRESENT).length;
   const absent = records.filter((r) => r.attendanceStatus === ATTENDANCE_STATUS.ABSENT).length;
-  const halfDay = records.filter((r) => r.attendanceStatus === ATTENDANCE_STATUS.HALF_DAY).length;
-  const lateArrivals = records.filter((r) => r.lateArrival).length;
+  const halfDay = records.filter((r) => r.approvalStatus === APPROVAL_STATUS.APPROVED && r.attendanceStatus === ATTENDANCE_STATUS.HALF_DAY).length;
+  const lateArrivals = records.filter((r) => r.approvalStatus === APPROVAL_STATUS.APPROVED && r.lateArrival).length;
+  const approvedRecords = records.filter((r) => r.approvalStatus === APPROVAL_STATUS.APPROVED);
   const attendanceDays = present + halfDay;
   const attendancePercentage = workingDays > 0
     ? parseFloat(((attendanceDays / workingDays) * 100).toFixed(2))
@@ -138,8 +139,8 @@ const getMonthlyAttendance = async (employeeId, year, month) => {
     halfDay,
     lateArrivals,
     totalLeaveDays,
-    earlyExits: records.filter((r) => r.earlyExit).length,
-    totalWorkedHours: parseFloat(records.reduce((sum, r) => sum + (r.totalWorkedHours || 0), 0).toFixed(2)),
+    earlyExits: approvedRecords.filter((r) => r.earlyExit).length,
+    totalWorkedHours: parseFloat(approvedRecords.reduce((sum, r) => sum + (r.totalWorkedHours || 0), 0).toFixed(2)),
     attendancePercentage,
   };
 

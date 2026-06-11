@@ -2,6 +2,8 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 
 const { globalLimiter } = require('./middleware/rateLimiter');
 const errorHandler = require('./middleware/errorHandler');
@@ -20,14 +22,26 @@ const notificationRoutes = require('./routes/notification.routes');
 const overtimeRoutes = require('./routes/overtime.routes');
 const profileRoutes = require('./routes/profile.routes');
 const holidayRoutes = require('./routes/holiday.routes');
+const inquiryRoutes = require('./routes/inquiry.routes');
+const insightRoutes = require('./routes/insight.routes');
+const caseStudyRoutes = require('./routes/caseStudy.routes');
+const ourWorkRoutes = require('./routes/ourWork.routes');
 
 const app = express();
 
-// Security middleware
+// Support comma-separated origins: CLIENT_URL=https://app.com,https://www.app.com
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim());
+
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow non-browser requests (e.g. mobile, curl) and listed origins
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -35,8 +49,8 @@ app.use(
 );
 
 // Request parsing
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '50kb' }));
+app.use(express.urlencoded({ extended: true, limit: '50kb' }));
 
 // HTTP request logging (skip in test env)
 if (process.env.NODE_ENV !== 'test') {
@@ -49,6 +63,13 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Global rate limiter
 app.use(globalLimiter);
+
+// Swagger docs
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'Attendance Tracker API Docs',
+  swaggerOptions: { persistAuthorization: true },
+}));
+app.get('/docs.json', (req, res) => res.json(swaggerSpec));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -69,6 +90,10 @@ app.use(`${API_PREFIX}/notifications`, notificationRoutes);
 app.use(`${API_PREFIX}/overtime`, overtimeRoutes);
 app.use(`${API_PREFIX}/profile`, profileRoutes);
 app.use(`${API_PREFIX}/holidays`, holidayRoutes);
+app.use(`${API_PREFIX}/inquiries`, inquiryRoutes);
+app.use(`${API_PREFIX}/insights`, insightRoutes);
+app.use(`${API_PREFIX}/case-studies`, caseStudyRoutes);
+app.use(`${API_PREFIX}/our-work`, ourWorkRoutes);
 
 // 404 handler
 app.use((req, res) => {
