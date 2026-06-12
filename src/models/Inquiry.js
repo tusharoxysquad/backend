@@ -17,33 +17,32 @@ const inquirySchema = new mongoose.Schema(
     },
     phone: {
       type: String,
+      required: [true, 'Phone number is required'],
       trim: true,
-      default: null,
       maxlength: [20, 'Phone cannot exceed 20 characters'],
     },
-    companyName: {
+    country: {
       type: String,
       trim: true,
       default: null,
-      maxlength: [150, 'Company name cannot exceed 150 characters'],
+      maxlength: [100, 'Country cannot exceed 100 characters'],
     },
-    serviceDetails: {
+    designation: {
       type: String,
       trim: true,
       default: null,
-      maxlength: [500, 'Service details cannot exceed 500 characters'],
+      maxlength: [100, 'Designation cannot exceed 100 characters'],
     },
-    estimatedBudget: {
+    messengerType: {
       type: String,
-      trim: true,
+      enum: ['Meet', 'Teams', 'Google', 'Others'],
       default: null,
-      maxlength: [50, 'Estimated budget cannot exceed 50 characters'],
     },
-    subject: {
+    messengerId: {
       type: String,
       trim: true,
       default: null,
-      maxlength: [150, 'Subject cannot exceed 150 characters'],
+      maxlength: [200, 'Messenger ID cannot exceed 200 characters'],
     },
     message: {
       type: String,

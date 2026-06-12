@@ -21,11 +21,10 @@ const inquirySchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
   phone: Joi.string().max(20).required(),
-  companyName: Joi.string().max(150).optional().allow('', null),
-  serviceDetails: Joi.string().max(500).optional().allow('', null),
-  estimatedBudget: Joi.string().max(50).optional().allow('', null),
-  subject: Joi.string().min(3).max(150).optional().allow('', null),
-  message: Joi.string().min(10).max(2000).required(),
+  country: Joi.string().max(100).optional().allow('', null),
+  designation: Joi.string().max(100).optional().allow('', null),
+  messengerType: Joi.string().valid('Meet', 'Teams', 'Google', 'Others').optional().allow(null),
+  messengerId: Joi.string().max(200).optional().allow('', null),
   message: Joi.string().min(10).max(2000).required(),
 });
 
