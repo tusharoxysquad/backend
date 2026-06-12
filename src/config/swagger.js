@@ -11,6 +11,7 @@ const options = {
     servers: [
       { url: 'http://localhost:5000', description: 'Local Development' },
       { url: 'https://admin-backend-1jyu.onrender.com', description: 'Production (Render)' },
+      { url: 'https://oxysquad-staging.netlify.app', description: 'Staging (Netlify)' },
     ],
     components: {
       securitySchemes: {

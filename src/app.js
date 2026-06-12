@@ -33,6 +33,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5000',
   'http://localhost:3000',
+  'https://oxysquad-staging.netlify.app',
   ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : []),
 ];
 
