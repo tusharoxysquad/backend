@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       { url: 'http://localhost:5000', description: 'Local Development' },
-      { url: process.env.BACKEND_URL || 'https://your-domain.com', description: 'Production' },
+      { url: 'https://admin-backend-1jyu.onrender.com', description: 'Production (Render)' },
     ],
     components: {
       securitySchemes: {

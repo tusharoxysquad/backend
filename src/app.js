@@ -29,16 +29,17 @@ const ourWorkRoutes = require('./routes/ourWork.routes');
 
 const app = express();
 
-// Support comma-separated origins: CLIENT_URL=https://app.com,https://www.app.com
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
-  .split(',')
-  .map((o) => o.trim());
+// Allow only the Render deployment URL and localhost (for Swagger UI same-origin calls)
+const allowedOrigins = [
+  'http://localhost:5000',
+  'http://localhost:3000',
+  ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : []),
+];
 
 app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow non-browser requests (e.g. mobile, curl) and listed origins
       if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
       callback(new Error('Not allowed by CORS'));
     },
