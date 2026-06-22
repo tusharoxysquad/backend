@@ -3,7 +3,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const { sendSuccess, sendPaginated } = require('../utils/response');
 
 const submitInquiry = asyncHandler(async (req, res) => {
-  const inquiry = await inquiryService.submitInquiry(req.body);
+  const inquiry = await inquiryService.submitInquiry(req.body, req.file);
   sendSuccess(res, 'Inquiry submitted successfully', inquiry, 201);
 });
 

@@ -4,19 +4,129 @@
  *   post:
  *     tags: [Inquiries]
  *     summary: Submit a public inquiry (rate limited — 5/hr per IP)
+ *     description: Accepts multipart/form-data. All text fields plus an optional document file (PDF, DOC, DOCX, PPT, PPTX — max 20 MB).
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/InquiryBody'
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - phone
+ *               - companyName
+ *               - serviceInterestedIn
+ *               - projectTimeline
+ *               - requirementType
+ *               - projectDescription
+ *               - agreeToContact
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: John Doe
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@company.com
+ *               phone:
+ *                 type: string
+ *                 example: '+123456789'
+ *               designation:
+ *                 type: string
+ *                 example: CTO
+ *               companyName:
+ *                 type: string
+ *                 example: Acme Corp
+ *               companyWebsite:
+ *                 type: string
+ *                 example: 'https://acme.com'
+ *               serviceInterestedIn:
+ *                 type: string
+ *                 enum:
+ *                   - AI & Automation
+ *                   - Custom Software Development
+ *                   - Web Development
+ *                   - Mobile App Development
+ *                   - Data Analytics & BI
+ *                   - Cloud & DevOps
+ *                   - Digital Transformation
+ *                   - UI/UX Design
+ *                   - Dedicated Development Team
+ *                   - Other
+ *                 example: Custom Software Development
+ *               serviceInterestedOther:
+ *                 type: string
+ *                 example: Cyber Security Solutions
+ *                 description: Required when serviceInterestedIn is Other
+ *               projectTimeline:
+ *                 type: string
+ *                 enum:
+ *                   - Immediate
+ *                   - Within 1 Month
+ *                   - Within 3 Months
+ *                   - Within 6 Months
+ *                   - Exploring Options
+ *                 example: Within 3 Months
+ *               requirementType:
+ *                 type: string
+ *                 enum:
+ *                   - New Product Development
+ *                   - Existing Product Enhancement
+ *                   - Dedicated Team Hiring
+ *                   - AI Implementation
+ *                   - Digital Transformation
+ *                   - Support & Maintenance
+ *                   - Not Sure Yet
+ *                 example: New Product Development
+ *               requirementTypeOther:
+ *                 type: string
+ *                 example: Custom requirement
+ *               projectDescription:
+ *                 type: string
+ *                 maxLength: 3000
+ *                 example: We need an AI-based SaaS platform.
+ *               heardAboutUs:
+ *                 type: string
+ *                 example: LinkedIn
+ *                 description: 'Google, LinkedIn, Referral, Social Media, Clutch, Existing Client, Other'
+ *               heardAboutUsOther:
+ *                 type: string
+ *                 example: Tech Conference
+ *                 description: Required when heardAboutUs is Other
+ *               agreeToContact:
+ *                 type: boolean
+ *                 example: true
+ *                 description: Must be true
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: 'Optional requirements document (PDF, DOC, DOCX, PPT, PPTX — max 20 MB)'
  *     responses:
  *       201:
- *         description: Inquiry submitted
+ *         description: Inquiry submitted successfully
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               success: true
+ *               message: Inquiry submitted successfully
+ *               data:
+ *                 _id: 64f1a2b3c4d5e6f7a8b9c0d1
+ *                 name: John Doe
+ *                 email: john@company.com
+ *                 companyName: Acme Corp
+ *                 serviceInterestedIn: Custom Software Development
+ *                 projectTimeline: Within 3 Months
+ *                 requirementType: New Product Development
+ *                 status: UNREAD
+ *                 document:
+ *                   fileName: abc123.pdf
+ *                   originalName: requirements.pdf
+ *                   fileUrl: 'https://res.cloudinary.com/demo/raw/upload/inquiries/documents/abc123.pdf'
+ *                   fileSize: 204800
+ *                   mimeType: application/pdf
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       429:
@@ -35,10 +145,16 @@
  *       - $ref: '#/components/parameters/LimitParam'
  *       - $ref: '#/components/parameters/SearchParam'
  *       - in: query
- *         name: isRead
+ *         name: status
  *         schema:
- *           type: boolean
- *         description: Filter by read/unread
+ *           type: string
+ *           enum: [UNREAD, READ]
+ *         description: Filter by read status
+ *       - in: query
+ *         name: serviceInterestedIn
+ *         schema:
+ *           type: string
+ *         description: Filter by service type
  *     responses:
  *       200:
  *         description: Inquiries list
@@ -76,7 +192,7 @@
  *         $ref: '#/components/responses/NotFound'
  *   delete:
  *     tags: [Inquiries]
- *     summary: Delete inquiry (Super Admin)
+ *     summary: Soft delete inquiry (Super Admin)
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -120,7 +236,7 @@
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         $ref: '#/components/responses/NotFound'
- *
+ */
  * /api/v1/insights:
  *   get:
  *     tags: [Insights]

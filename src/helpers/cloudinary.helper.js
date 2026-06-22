@@ -34,4 +34,39 @@ const deleteImage = async (publicId) => {
   await cloudinary.uploader.destroy(publicId);
 };
 
-module.exports = { uploadImage, uploadImageFromUrl, deleteImage };
+/**
+ * Upload a document (PDF, DOC, DOCX, PPT, PPTX) buffer to Cloudinary
+ * @param {Express.Multer.File} file - multer file object (memory storage)
+ * @param {string} folder - Cloudinary folder name
+ * @returns {{ fileName: string, originalName: string, fileUrl: string, fileSize: number, mimeType: string, publicId: string }}
+ */
+const uploadDocument = (file, folder = 'documents') => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'raw', use_filename: true, unique_filename: true },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve({
+          fileName: result.public_id.split('/').pop(),
+          originalName: file.originalname,
+          fileUrl: result.secure_url,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+          publicId: result.public_id,
+        });
+      }
+    );
+    Readable.from(file.buffer).pipe(stream);
+  });
+};
+
+/**
+ * Delete a raw file (document) from Cloudinary by publicId
+ * @param {string} publicId
+ */
+const deleteDocument = async (publicId) => {
+  if (!publicId) return;
+  await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+};
+
+module.exports = { uploadImage, uploadImageFromUrl, deleteImage, uploadDocument, deleteDocument };

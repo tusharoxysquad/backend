@@ -1,10 +1,20 @@
 const Inquiry = require('../models/Inquiry');
 const ApiError = require('../utils/apiError');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const { uploadDocument } = require('../helpers/cloudinary.helper');
 
-const submitInquiry = async (data) => {
-  const inquiry = await Inquiry.create(data);
-  return inquiry;
+const submitInquiry = async (data, file) => {
+  if (file) {
+    const doc = await uploadDocument(file, 'inquiries/documents');
+    data.document = {
+      fileName: doc.fileName,
+      originalName: doc.originalName,
+      fileUrl: doc.fileUrl,
+      fileSize: doc.fileSize,
+      mimeType: doc.mimeType,
+    };
+  }
+  return Inquiry.create(data);
 };
 
 const getAllInquiries = async (query) => {
@@ -12,14 +22,20 @@ const getAllInquiries = async (query) => {
   const filter = {};
 
   if (query.status) filter.status = query.status;
+  if (query.serviceInterestedIn) filter.serviceInterestedIn = query.serviceInterestedIn;
 
   if (query.search) {
     const regex = new RegExp(query.search, 'i');
-    filter.$or = [{ name: regex }, { email: regex }, { subject: regex }];
+    filter.$or = [
+      { name: regex },
+      { email: regex },
+      { companyName: regex },
+      { projectDescription: regex },
+    ];
   }
 
   const [inquiries, total] = await Promise.all([
-    Inquiry.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Inquiry.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).select('-__v'),
     Inquiry.countDocuments(filter),
   ]);
 
@@ -27,17 +43,13 @@ const getAllInquiries = async (query) => {
 };
 
 const getInquiryById = async (id) => {
-  const inquiry = await Inquiry.findById(id);
+  const inquiry = await Inquiry.findById(id).select('-__v');
   if (!inquiry) throw ApiError.notFound('Inquiry not found');
   return inquiry;
 };
 
 const markAsRead = async (id) => {
-  const inquiry = await Inquiry.findByIdAndUpdate(
-    id,
-    { status: 'READ' },
-    { new: true }
-  );
+  const inquiry = await Inquiry.findByIdAndUpdate(id, { status: 'READ' }, { new: true }).select('-__v');
   if (!inquiry) throw ApiError.notFound('Inquiry not found');
   return inquiry;
 };
