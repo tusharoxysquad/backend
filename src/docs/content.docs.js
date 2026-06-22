@@ -236,7 +236,7 @@
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         $ref: '#/components/responses/NotFound'
- */
+ *
  * /api/v1/insights:
  *   get:
  *     tags: [Insights]
@@ -271,7 +271,7 @@
  *               $ref: '#/components/schemas/PaginatedResponse'
  *   post:
  *     tags: [Insights]
- *     summary: Create insight (Admin+) — supports file upload or imageUrl
+ *     summary: Create insight (Admin+)
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -279,17 +279,68 @@
  *       content:
  *         multipart/form-data:
  *           schema:
- *             allOf:
- *               - $ref: '#/components/schemas/InsightBody'
- *               - type: object
- *                 properties:
- *                   image:
- *                     type: string
- *                     format: binary
- *                     description: Image file (optional — use imageUrl if sending a URL instead)
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/InsightBody'
+ *             type: object
+ *             required: [title, category, industry, summary]
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: The Rise of AI in Healthcare
+ *               category:
+ *                 type: string
+ *                 example: Technology
+ *               industry:
+ *                 type: string
+ *                 example: Healthcare
+ *               summary:
+ *                 type: string
+ *                 example: An in-depth look at how AI is transforming diagnostics.
+ *               author:
+ *                 type: string
+ *                 example: John Doe
+ *               publication_date:
+ *                 type: string
+ *                 format: date
+ *                 example: '2025-01-15'
+ *               priority_level:
+ *                 type: string
+ *                 enum: [High, Medium, Low]
+ *                 example: High
+ *               strategic_impact:
+ *                 type: string
+ *                 enum: [High, Medium, Low]
+ *                 example: High
+ *               tags:
+ *                 type: string
+ *                 example: '["AI", "Healthcare"]'
+ *                 description: JSON stringified array
+ *               target_audience:
+ *                 type: string
+ *                 example: '["CTO", "Executives"]'
+ *                 description: JSON stringified array
+ *               key_takeaways:
+ *                 type: string
+ *                 example: '["AI reduces errors by 40%"]'
+ *                 description: JSON stringified array
+ *               recommendations:
+ *                 type: string
+ *                 example: '["Invest in AI training"]'
+ *                 description: JSON stringified array
+ *               future_predictions:
+ *                 type: string
+ *                 example: '["AI handles 50% diagnoses by 2030"]'
+ *                 description: JSON stringified array
+ *               sections:
+ *                 type: string
+ *                 example: '[{"heading":"Introduction","content":"AI is reshaping healthcare."}]'
+ *                 description: JSON stringified array
+ *               imageUrl:
+ *                 type: string
+ *                 example: 'https://res.cloudinary.com/demo/image/upload/sample.jpg'
+ *                 description: URL alternative to file upload
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file (optional — use imageUrl instead if sending a URL)
  *     responses:
  *       201:
  *         description: Insight created
@@ -338,16 +389,39 @@
  *       content:
  *         multipart/form-data:
  *           schema:
- *             allOf:
- *               - $ref: '#/components/schemas/InsightBody'
- *               - type: object
- *                 properties:
- *                   image:
- *                     type: string
- *                     format: binary
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/InsightBody'
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               industry:
+ *                 type: string
+ *               summary:
+ *                 type: string
+ *               author:
+ *                 type: string
+ *               publication_date:
+ *                 type: string
+ *                 format: date
+ *               priority_level:
+ *                 type: string
+ *                 enum: [High, Medium, Low]
+ *               strategic_impact:
+ *                 type: string
+ *                 enum: [High, Medium, Low]
+ *               tags:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               sections:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               imageUrl:
+ *                 type: string
+ *                 description: URL alternative to file upload
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Insight updated
@@ -415,7 +489,7 @@
  *               $ref: '#/components/schemas/PaginatedResponse'
  *   post:
  *     tags: [Case Studies]
- *     summary: Create case study (Admin+) — supports file upload or URL fields
+ *     summary: Create case study (Admin+)
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -423,27 +497,87 @@
  *       content:
  *         multipart/form-data:
  *           schema:
- *             allOf:
- *               - $ref: '#/components/schemas/CaseStudyBody'
- *               - type: object
- *                 properties:
- *                   bannerImage:
- *                     type: string
- *                     format: binary
- *                     description: Banner image file (or use bannerImageUrl)
- *                   logo:
- *                     type: string
- *                     format: binary
- *                     description: Logo file (or use logoUrl)
- *                   gallery:
- *                     type: array
- *                     items:
- *                       type: string
- *                       format: binary
- *                     description: Gallery images (max 10, or use galleryUrls)
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CaseStudyBody'
+ *             type: object
+ *             required: [title]
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: E-Commerce Platform Redesign
+ *               clientName:
+ *                 type: string
+ *                 example: ShopEasy Inc.
+ *               industry:
+ *                 type: string
+ *                 example: Retail
+ *               year:
+ *                 type: string
+ *                 example: '2024'
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *                 example: published
+ *               hero:
+ *                 type: string
+ *                 example: '{"title":"Transforming Online Retail","subtitle":"A complete UX overhaul","description":"We redesigned the platform.","tags":["E-Commerce","UX","React"]}'
+ *                 description: JSON stringified object
+ *               overview:
+ *                 type: string
+ *                 example: '{"summary":"Full platform redesign","duration":"6 months"}'
+ *                 description: JSON stringified object
+ *               brief:
+ *                 type: string
+ *                 example: '{"objective":"Increase conversion rate by 25%"}'
+ *                 description: JSON stringified object
+ *               challenge:
+ *                 type: string
+ *                 example: '{"description":"Legacy codebase and poor mobile UX"}'
+ *                 description: JSON stringified object
+ *               solution:
+ *                 type: string
+ *                 example: '{"description":"Built a React-based PWA"}'
+ *                 description: JSON stringified object
+ *               technologyStack:
+ *                 type: string
+ *                 example: '[{"name":"React"},{"name":"Node.js"}]'
+ *                 description: JSON stringified array
+ *               features:
+ *                 type: string
+ *                 example: '[{"title":"One-click checkout"}]'
+ *                 description: JSON stringified array
+ *               results:
+ *                 type: string
+ *                 example: '[{"metric":"Conversion Rate","value":"+28%"}]'
+ *                 description: JSON stringified array
+ *               testimonials:
+ *                 type: string
+ *                 example: '[{"author":"Jane Smith","quote":"Outstanding!"}]'
+ *                 description: JSON stringified array
+ *               bannerImageUrl:
+ *                 type: string
+ *                 example: 'https://res.cloudinary.com/demo/image/upload/banner.jpg'
+ *                 description: URL alternative to file upload
+ *               logoUrl:
+ *                 type: string
+ *                 example: 'https://res.cloudinary.com/demo/image/upload/logo.png'
+ *                 description: URL alternative to file upload
+ *               galleryUrls:
+ *                 type: string
+ *                 example: '["https://example.com/img1.jpg"]'
+ *                 description: JSON stringified array of URLs
+ *               bannerImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: Banner image file (or use bannerImageUrl)
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Logo file (or use logoUrl)
+ *               gallery:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Gallery images max 10 (or use galleryUrls)
  *     responses:
  *       201:
  *         description: Case study created
@@ -490,24 +624,52 @@
  *       content:
  *         multipart/form-data:
  *           schema:
- *             allOf:
- *               - $ref: '#/components/schemas/CaseStudyBody'
- *               - type: object
- *                 properties:
- *                   bannerImage:
- *                     type: string
- *                     format: binary
- *                   logo:
- *                     type: string
- *                     format: binary
- *                   gallery:
- *                     type: array
- *                     items:
- *                       type: string
- *                       format: binary
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CaseStudyBody'
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               clientName:
+ *                 type: string
+ *               industry:
+ *                 type: string
+ *               year:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *               hero:
+ *                 type: string
+ *                 description: JSON stringified object
+ *               overview:
+ *                 type: string
+ *                 description: JSON stringified object
+ *               technologyStack:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               features:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               results:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               bannerImageUrl:
+ *                 type: string
+ *               logoUrl:
+ *                 type: string
+ *               galleryUrls:
+ *                 type: string
+ *                 description: JSON stringified array of URLs
+ *               bannerImage:
+ *                 type: string
+ *                 format: binary
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *               gallery:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       200:
  *         description: Case study updated
@@ -570,7 +732,7 @@
  *               $ref: '#/components/schemas/PaginatedResponse'
  *   post:
  *     tags: [Our Work]
- *     summary: Create work item (Admin+) — supports file upload or URL fields
+ *     summary: Create work item (Admin+)
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -578,27 +740,82 @@
  *       content:
  *         multipart/form-data:
  *           schema:
- *             allOf:
- *               - $ref: '#/components/schemas/CaseStudyBody'
- *               - type: object
- *                 properties:
- *                   bannerImage:
- *                     type: string
- *                     format: binary
- *                     description: Banner image file (or use bannerImageUrl)
- *                   logo:
- *                     type: string
- *                     format: binary
- *                     description: Logo file (or use logoUrl)
- *                   gallery:
- *                     type: array
- *                     items:
- *                       type: string
- *                       format: binary
- *                     description: Gallery images (max 10, or use galleryUrls)
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CaseStudyBody'
+ *             type: object
+ *             required: [title]
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: Mobile Banking App
+ *               clientName:
+ *                 type: string
+ *                 example: FinTrust Bank
+ *               industry:
+ *                 type: string
+ *                 example: Finance
+ *               year:
+ *                 type: string
+ *                 example: '2024'
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *                 example: published
+ *               hero:
+ *                 type: string
+ *                 example: '{"title":"Banking in Your Pocket","subtitle":"Modern mobile-first","description":"Built for 500k+ users.","tags":["FinTech","Mobile"]}'
+ *                 description: JSON stringified object
+ *               overview:
+ *                 type: string
+ *                 example: '{"summary":"Mobile banking app","duration":"8 months"}'
+ *                 description: JSON stringified object
+ *               brief:
+ *                 type: string
+ *                 description: JSON stringified object
+ *               challenge:
+ *                 type: string
+ *                 description: JSON stringified object
+ *               solution:
+ *                 type: string
+ *                 description: JSON stringified object
+ *               technologyStack:
+ *                 type: string
+ *                 example: '[{"name":"React Native"},{"name":"AWS"}]'
+ *                 description: JSON stringified array
+ *               features:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               results:
+ *                 type: string
+ *                 example: '[{"metric":"App Rating","value":"4.8/5"}]'
+ *                 description: JSON stringified array
+ *               testimonials:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               bannerImageUrl:
+ *                 type: string
+ *                 example: 'https://res.cloudinary.com/demo/image/upload/banner.jpg'
+ *                 description: URL alternative to file upload
+ *               logoUrl:
+ *                 type: string
+ *                 example: 'https://res.cloudinary.com/demo/image/upload/logo.png'
+ *                 description: URL alternative to file upload
+ *               galleryUrls:
+ *                 type: string
+ *                 example: '["https://example.com/img1.jpg"]'
+ *                 description: JSON stringified array of URLs
+ *               bannerImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: Banner image file (or use bannerImageUrl)
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Logo file (or use logoUrl)
+ *               gallery:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Gallery images max 10 (or use galleryUrls)
  *     responses:
  *       201:
  *         description: Work item created
@@ -645,24 +862,52 @@
  *       content:
  *         multipart/form-data:
  *           schema:
- *             allOf:
- *               - $ref: '#/components/schemas/CaseStudyBody'
- *               - type: object
- *                 properties:
- *                   bannerImage:
- *                     type: string
- *                     format: binary
- *                   logo:
- *                     type: string
- *                     format: binary
- *                   gallery:
- *                     type: array
- *                     items:
- *                       type: string
- *                       format: binary
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CaseStudyBody'
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               clientName:
+ *                 type: string
+ *               industry:
+ *                 type: string
+ *               year:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *               hero:
+ *                 type: string
+ *                 description: JSON stringified object
+ *               overview:
+ *                 type: string
+ *                 description: JSON stringified object
+ *               technologyStack:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               features:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               results:
+ *                 type: string
+ *                 description: JSON stringified array
+ *               bannerImageUrl:
+ *                 type: string
+ *               logoUrl:
+ *                 type: string
+ *               galleryUrls:
+ *                 type: string
+ *                 description: JSON stringified array of URLs
+ *               bannerImage:
+ *                 type: string
+ *                 format: binary
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *               gallery:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       200:
  *         description: Work item updated

@@ -10,6 +10,18 @@ const validate = (schema) => (req, res, next) => {
   next();
 };
 
+// Parses JSON-stringified fields sent via multipart/form-data into their proper JS types.
+// Must be used BEFORE validate() on routes that use multer.
+const parseJsonFields = (...fields) => (req, res, next) => {
+  fields.forEach((field) => {
+    const val = req.body[field];
+    if (typeof val === 'string') {
+      try { req.body[field] = JSON.parse(val); } catch (_) { /* leave as-is, Joi will catch it */ }
+    }
+  });
+  next();
+};
+
 // Strong password: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
 const strongPassword = Joi.string()
   .min(8)
@@ -174,4 +186,5 @@ module.exports = {
   updateInsightSchema,
   caseStudyBodySchema,
   updateCaseStudySchema,
+  parseJsonFields,
 };
