@@ -41,9 +41,13 @@ const deleteImage = async (publicId) => {
  * @returns {{ fileName: string, originalName: string, fileUrl: string, fileSize: number, mimeType: string, publicId: string }}
  */
 const uploadDocument = (file, folder = 'documents') => {
+  const ext = file.originalname.substring(file.originalname.lastIndexOf('.'));
+  const baseName = file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const publicId = `${folder}/${baseName}_${Date.now()}${ext}`;
+
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: 'raw', use_filename: true, unique_filename: true },
+      { public_id: publicId, resource_type: 'raw', use_filename: false },
       (error, result) => {
         if (error) return reject(error);
         resolve({
