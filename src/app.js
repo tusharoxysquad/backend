@@ -34,6 +34,7 @@ const allowedOrigins = [
   'http://localhost:5000',
   'http://localhost:3000',
   'https://oxysquad-staging.netlify.app',
+  'https://frontend-rho-bice-97.vercel.app',
   ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : []),
 ];
 
