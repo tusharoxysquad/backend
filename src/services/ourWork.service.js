@@ -27,7 +27,6 @@ const getAllOurWork = async (query) => {
   const { page, limit, skip } = getPagination(query);
   const filter = {};
 
-  if (query.status) filter.status = query.status;
   if (query.search) {
     filter.title = new RegExp(query.search, 'i');
   }

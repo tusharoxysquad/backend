@@ -146,7 +146,6 @@ const updateInsightSchema = createInsightSchema.fork(
 // Our Work
 const ourWorkBodySchema = Joi.object({
   title: Joi.string().min(3).max(200).required(),
-  status: Joi.string().valid('draft', 'published', 'archived').optional(),
   introduction: Joi.string().optional().allow('', null),
   challenge: Joi.string().optional().allow('', null),
   solution: Joi.string().optional().allow('', null),

@@ -4,7 +4,6 @@ const ourWorkSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     slug: { type: String, unique: true, lowercase: true, trim: true },
-    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     introduction: { type: String, default: null },
     challenge: { type: String, default: null },
     solution: { type: String, default: null },
@@ -30,7 +29,5 @@ ourWorkSchema.pre('save', function (next) {
   }
   next();
 });
-
-ourWorkSchema.index({ status: 1 });
 
 module.exports = mongoose.model('OurWork', ourWorkSchema);
