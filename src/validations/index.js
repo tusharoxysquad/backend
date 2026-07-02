@@ -143,7 +143,20 @@ const updateInsightSchema = createInsightSchema.fork(
   (f) => f.optional()
 );
 
-// Case Studies & Our Work share the same shape
+// Our Work
+const ourWorkBodySchema = Joi.object({
+  title: Joi.string().min(3).max(200).required(),
+  status: Joi.string().valid('draft', 'published', 'archived').optional(),
+  introduction: Joi.string().optional().allow('', null),
+  challenge: Joi.string().optional().allow('', null),
+  solution: Joi.string().optional().allow('', null),
+  technologyStack: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()).optional(),
+  bannerImageUrl: Joi.string().uri().optional().allow('', null),
+});
+
+const updateOurWorkSchema = ourWorkBodySchema.fork(['title'], (f) => f.optional());
+
+// Case Studies
 const caseStudyBodySchema = Joi.object({
   title: Joi.string().min(3).max(200).required(),
   clientName: Joi.string().max(150).optional().allow('', null),
@@ -161,7 +174,6 @@ const caseStudyBodySchema = Joi.object({
   testimonials: Joi.array().optional(),
   // URL-based image helpers (optional)
   bannerImageUrl: Joi.string().uri().optional().allow('', null),
-  logoUrl: Joi.string().uri().optional().allow('', null),
   galleryUrls: Joi.alternatives().try(Joi.array().items(Joi.string().uri()), Joi.string()).optional(),
   figmaScreenUrls: Joi.alternatives().try(Joi.array().items(Joi.string().uri()), Joi.string()).optional(),
 });
@@ -185,6 +197,8 @@ module.exports = {
   overtimeRejectSchema,
   createInsightSchema,
   updateInsightSchema,
+  ourWorkBodySchema,
+  updateOurWorkSchema,
   caseStudyBodySchema,
   updateCaseStudySchema,
   parseJsonFields,

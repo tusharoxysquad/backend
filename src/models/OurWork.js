@@ -1,35 +1,18 @@
 const mongoose = require('mongoose');
 
-const imageField = () => ({
-  imageUrl: { type: String, default: null },
-  publicId: { type: String, default: null },
-});
-
 const ourWorkSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     slug: { type: String, unique: true, lowercase: true, trim: true },
-    clientName: { type: String, trim: true },
-    industry: { type: String, trim: true },
-    year: { type: String },
     status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
-    hero: {
-      title: { type: String, trim: true },
-      subtitle: { type: String, trim: true },
-      description: { type: String },
-      bannerImage: { ...imageField() },
-      logo: { ...imageField() },
-      tags: { type: [String], default: [] },
+    introduction: { type: String, default: null },
+    challenge: { type: String, default: null },
+    solution: { type: String, default: null },
+    technologyStack: { type: [String], default: [] },
+    bannerImage: {
+      imageUrl: { type: String, default: null },
+      publicId: { type: String, default: null },
     },
-    overview: { type: mongoose.Schema.Types.Mixed, default: {} },
-    brief: { type: mongoose.Schema.Types.Mixed, default: {} },
-    challenge: { type: mongoose.Schema.Types.Mixed, default: {} },
-    solution: { type: mongoose.Schema.Types.Mixed, default: {} },
-    technologyStack: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    features: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    results: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    testimonials: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    gallery: { type: [{ ...imageField() }], default: [] },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
@@ -48,7 +31,6 @@ ourWorkSchema.pre('save', function (next) {
   next();
 });
 
-ourWorkSchema.index({ industry: 1 });
 ourWorkSchema.index({ status: 1 });
 
 module.exports = mongoose.model('OurWork', ourWorkSchema);

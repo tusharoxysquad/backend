@@ -14,14 +14,6 @@ const _processImages = async (files, data = {}, existing = {}) => {
     updates['hero.bannerImage'] = await uploadImageFromUrl(data.bannerImageUrl, 'case-studies');
   }
 
-  if (files?.logo?.[0]) {
-    await deleteImage(existing?.hero?.logo?.publicId);
-    updates['hero.logo'] = await uploadImage(files.logo[0], 'case-studies');
-  } else if (data.logoUrl) {
-    await deleteImage(existing?.hero?.logo?.publicId);
-    updates['hero.logo'] = await uploadImageFromUrl(data.logoUrl, 'case-studies');
-  }
-
   if (files?.gallery) {
     const uploaded = await Promise.all(files.gallery.map((f) => uploadImage(f, 'case-studies')));
     updates.gallery = uploaded;
@@ -43,7 +35,6 @@ const _processImages = async (files, data = {}, existing = {}) => {
 
 const _deleteAllImages = async (doc) => {
   await deleteImage(doc?.hero?.bannerImage?.publicId);
-  await deleteImage(doc?.hero?.logo?.publicId);
   if (doc.gallery?.length) {
     await Promise.all(doc.gallery.map((g) => deleteImage(g.publicId)));
   }
@@ -55,7 +46,6 @@ const _deleteAllImages = async (doc) => {
 const createCaseStudy = async (data, files, userId) => {
   const imageUpdates = await _processImages(files, data);
   if (imageUpdates['hero.bannerImage']) data.hero = { ...data.hero, bannerImage: imageUpdates['hero.bannerImage'] };
-  if (imageUpdates['hero.logo']) data.hero = { ...data.hero, logo: imageUpdates['hero.logo'] };
   if (imageUpdates.gallery) data.gallery = imageUpdates.gallery;
   if (imageUpdates.figmaScreens) data.figmaScreens = imageUpdates.figmaScreens;
   data.createdBy = userId;
@@ -98,7 +88,6 @@ const updateCaseStudy = async (id, data, files, userId) => {
 
   const imageUpdates = await _processImages(files, data, cs);
   if (imageUpdates['hero.bannerImage']) data.hero = { ...data.hero, bannerImage: imageUpdates['hero.bannerImage'] };
-  if (imageUpdates['hero.logo']) data.hero = { ...data.hero, logo: imageUpdates['hero.logo'] };
   if (imageUpdates.gallery) data.gallery = [...(cs.gallery || []), ...imageUpdates.gallery];
   if (imageUpdates.figmaScreens) data.figmaScreens = [...(cs.figmaScreens || []), ...imageUpdates.figmaScreens];
 

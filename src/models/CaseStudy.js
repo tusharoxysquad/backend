@@ -18,7 +18,6 @@ const caseStudySchema = new mongoose.Schema(
       subtitle: { type: String, trim: true },
       description: { type: String },
       bannerImage: { ...imageField() },
-      logo: { ...imageField() },
       tags: { type: [String], default: [] },
     },
     overview: { type: mongoose.Schema.Types.Mixed, default: {} },

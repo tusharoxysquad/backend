@@ -4,17 +4,12 @@ const controller = require('../controllers/ourWork.controller');
 const verifyJWT = require('../middleware/verifyJWT');
 const authorize = require('../middleware/authorize');
 const upload = require('../middleware/upload');
-const { validate, caseStudyBodySchema, updateCaseStudySchema, parseJsonFields } = require('../validations');
+const { validate, ourWorkBodySchema, updateOurWorkSchema, parseJsonFields } = require('../validations');
 
-const parseOurWorkFields = parseJsonFields(
-  'hero', 'overview', 'brief', 'challenge', 'solution',
-  'technologyStack', 'features', 'results', 'testimonials', 'galleryUrls'
-);
+const parseOurWorkFields = parseJsonFields('technologyStack');
 
 const ourWorkUpload = upload.fields([
   { name: 'bannerImage', maxCount: 1 },
-  { name: 'logo', maxCount: 1 },
-  { name: 'gallery', maxCount: 10 },
 ]);
 
 // Public
@@ -23,8 +18,8 @@ router.get('/:id', controller.getOurWorkById);
 
 // Protected — Super Admin & Admin
 router.use(verifyJWT, authorize('Super Admin', 'Admin'));
-router.post('/', ourWorkUpload, parseOurWorkFields, validate(caseStudyBodySchema), controller.createOurWork);
-router.patch('/:id', ourWorkUpload, parseOurWorkFields, validate(updateCaseStudySchema), controller.updateOurWork);
+router.post('/', ourWorkUpload, parseOurWorkFields, validate(ourWorkBodySchema), controller.createOurWork);
+router.patch('/:id', ourWorkUpload, parseOurWorkFields, validate(updateOurWorkSchema), controller.updateOurWork);
 router.delete('/:id', controller.deleteOurWork);
 
 module.exports = router;
