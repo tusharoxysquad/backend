@@ -48,6 +48,18 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otp: {
+      type: String,
+      select: false,
+    },
+    otpExpiry: {
+      type: Date,
+      select: false,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -69,10 +81,28 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
+// Generate a fresh 6-digit OTP, store its hash + expiry, and return the plaintext code to email out
+const OTP_EXPIRY_MINUTES = 10;
+userSchema.methods.setOtp = async function () {
+  const otp = String(Math.floor(100000 + Math.random() * 900000));
+  this.otp = await bcrypt.hash(otp, 10);
+  this.otpExpiry = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+  return otp;
+};
+
+// Compare candidate OTP against stored hash, honoring expiry
+userSchema.methods.compareOtp = async function (candidateOtp) {
+  if (!this.otp || !this.otpExpiry) return false;
+  if (this.otpExpiry.getTime() < Date.now()) return false;
+  return bcrypt.compare(candidateOtp, this.otp);
+};
+
 // Remove sensitive fields from JSON output
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
+  delete obj.otp;
+  delete obj.otpExpiry;
   return obj;
 };
 

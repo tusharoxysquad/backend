@@ -2,6 +2,7 @@ const User = require('../models/User');
 const { generateToken } = require('../config/jwt');
 const ApiError = require('../utils/apiError');
 const { ROLES } = require('../constants');
+const { issueAndSendOtp } = require('../helpers/otp.helper');
 
 const login = async ({ email, password }) => {
   const user = await User.findOne({ email }).select('+password');
@@ -11,10 +12,47 @@ const login = async ({ email, password }) => {
   const isMatch = await user.comparePassword(password);
   if (!isMatch) throw ApiError.unauthorized('Invalid email or password');
 
+  if (!user.isVerified) {
+    throw ApiError.forbidden('Email not verified. Please verify the OTP sent to your email before logging in.');
+  }
+
   const token = generateToken({ id: user._id, role: user.role });
   const loginUrl = `${process.env.CLIENT_URL}/login`;
 
   return { token, user, loginUrl };
+};
+
+/**
+ * Verify a pending account's OTP — marks it verified and logs it in
+ */
+const verifyOtp = async ({ email, otp }) => {
+  const user = await User.findOne({ email }).select('+otp +otpExpiry');
+  if (!user) throw ApiError.notFound('User not found');
+  if (user.isVerified) throw ApiError.conflict('Account is already verified');
+
+  const isMatch = await user.compareOtp(otp);
+  if (!isMatch) throw ApiError.badRequest('Invalid or expired OTP');
+
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpiry = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  const token = generateToken({ id: user._id, role: user.role });
+  const loginUrl = `${process.env.CLIENT_URL}/login`;
+
+  return { token, user, loginUrl };
+};
+
+/**
+ * Re-issue and resend an OTP for a not-yet-verified account
+ */
+const resendOtp = async ({ email }) => {
+  const user = await User.findOne({ email });
+  if (!user) throw ApiError.notFound('User not found');
+  if (user.isVerified) throw ApiError.conflict('Account is already verified');
+
+  await issueAndSendOtp(user);
 };
 
 const changePassword = async (userId, { currentPassword, newPassword }) => {
@@ -36,11 +74,10 @@ const setupSuperAdmin = async (data) => {
   if (existing) throw ApiError.conflict('Super Admin already exists. This setup route is disabled.');
 
   const superAdmin = await User.create({ ...data, role: ROLES.SUPER_ADMIN });
+  await issueAndSendOtp(superAdmin);
 
-  const token = generateToken({ id: superAdmin._id, role: superAdmin.role });
   const loginUrl = `${process.env.CLIENT_URL}/login`;
-
-  return { token, user: superAdmin, loginUrl };
+  return { user: superAdmin, loginUrl };
 };
 
 /**
@@ -51,6 +88,7 @@ const createAdmin = async (creatorId, data) => {
   if (exists) throw ApiError.conflict('Email already registered');
 
   const admin = await User.create({ ...data, role: ROLES.ADMIN, createdBy: creatorId });
+  await issueAndSendOtp(admin);
 
   const loginUrl = `${process.env.CLIENT_URL}/login`;
   return { user: admin, loginUrl };
@@ -64,9 +102,18 @@ const createEmployee = async (creatorId, data) => {
   if (exists) throw ApiError.conflict('Email already registered');
 
   const employee = await User.create({ ...data, role: ROLES.EMPLOYEE, createdBy: creatorId });
+  await issueAndSendOtp(employee);
 
   const loginUrl = `${process.env.CLIENT_URL}/login`;
   return { user: employee, loginUrl };
 };
 
-module.exports = { login, changePassword, setupSuperAdmin, createAdmin, createEmployee };
+module.exports = {
+  login,
+  changePassword,
+  setupSuperAdmin,
+  createAdmin,
+  createEmployee,
+  verifyOtp,
+  resendOtp,
+};

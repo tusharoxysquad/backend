@@ -22,18 +22,38 @@ const changePassword = asyncHandler(async (req, res) => {
 });
 
 const setupSuperAdmin = asyncHandler(async (req, res) => {
-  const { token, user, loginUrl } = await authService.setupSuperAdmin(req.body);
-  sendSuccess(res, 'Super Admin created successfully', { token, user, loginUrl }, 201);
+  const { user, loginUrl } = await authService.setupSuperAdmin(req.body);
+  sendSuccess(res, 'Super Admin created. An OTP has been sent to the email — verify it before logging in.', { user, loginUrl }, 201);
 });
 
 const createAdmin = asyncHandler(async (req, res) => {
   const { user, loginUrl } = await authService.createAdmin(req.user._id, req.body);
-  sendSuccess(res, 'Admin created successfully', { user, loginUrl }, 201);
+  sendSuccess(res, 'Admin created. An OTP has been sent to the email — verify it before logging in.', { user, loginUrl }, 201);
 });
 
 const createEmployee = asyncHandler(async (req, res) => {
   const { user, loginUrl } = await authService.createEmployee(req.user._id, req.body);
-  sendSuccess(res, 'Employee created successfully', { user, loginUrl }, 201);
+  sendSuccess(res, 'Employee created. An OTP has been sent to the email — verify it before logging in.', { user, loginUrl }, 201);
 });
 
-module.exports = { login, logout, getMe, changePassword, setupSuperAdmin, createAdmin, createEmployee };
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { token, user, loginUrl } = await authService.verifyOtp(req.body);
+  sendSuccess(res, 'Email verified successfully', { token, user, loginUrl });
+});
+
+const resendOtp = asyncHandler(async (req, res) => {
+  await authService.resendOtp(req.body);
+  sendSuccess(res, 'OTP resent successfully');
+});
+
+module.exports = {
+  login,
+  logout,
+  getMe,
+  changePassword,
+  setupSuperAdmin,
+  createAdmin,
+  createEmployee,
+  verifyOtp,
+  resendOtp,
+};

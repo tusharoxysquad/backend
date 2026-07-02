@@ -2,12 +2,14 @@ const User = require('../models/User');
 const ApiError = require('../utils/apiError');
 const { ROLES } = require('../constants');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
+const { issueAndSendOtp } = require('../helpers/otp.helper');
 
 const createUser = async (creatorId, userData) => {
   const exists = await User.findOne({ email: userData.email });
   if (exists) throw ApiError.conflict('Email already registered');
 
   const user = await User.create({ ...userData, createdBy: creatorId });
+  await issueAndSendOtp(user);
 
   const loginUrl = `${process.env.CLIENT_URL}/login`;
   return { user, loginUrl };

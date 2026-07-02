@@ -44,6 +44,18 @@ const changePasswordSchema = Joi.object({
   newPassword: strongPassword,
 });
 
+const verifyOtpSchema = Joi.object({
+  email: Joi.string().email().required(),
+  otp: Joi.string().length(6).pattern(/^\d+$/).required().messages({
+    'string.length': 'OTP must be 6 digits',
+    'string.pattern.base': 'OTP must contain only digits',
+  }),
+});
+
+const resendOtpSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
 // Signup schemas
 const setupSuperAdminSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
@@ -212,6 +224,8 @@ module.exports = {
   validate,
   loginSchema,
   changePasswordSchema,
+  verifyOtpSchema,
+  resendOtpSchema,
   setupSuperAdminSchema,
   createAdminSchema,
   createEmployeeSchema,
