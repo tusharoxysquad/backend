@@ -143,6 +143,39 @@ const updateInsightSchema = createInsightSchema.fork(
   (f) => f.optional()
 );
 
+// Blog
+const blogSectionSchema = Joi.object({
+  title: Joi.string().required(),
+  description: Joi.string().optional().allow('', null),
+  points: Joi.array().items(
+    Joi.object({
+      title: Joi.string().optional().allow('', null),
+      description: Joi.string().required(),
+    })
+  ).optional(),
+});
+
+const blogBodySchema = Joi.object({
+  title: Joi.string().min(3).max(200).required(),
+  meta: Joi.object({
+    title: Joi.string().required(),
+    description: Joi.string().required(),
+    keywords: Joi.array().items(Joi.string()).optional(),
+  }).required(),
+  author: Joi.object({
+    name: Joi.string().optional().allow('', null),
+    image: Joi.string().optional().allow('', null),
+  }).optional(),
+  category: Joi.string().optional().allow('', null),
+  tags: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()).optional(),
+  readTime: Joi.string().optional().allow('', null),
+  status: Joi.string().valid('draft', 'published').optional(),
+  sections: Joi.array().items(blogSectionSchema).optional(),
+  thumbnailUrl: Joi.string().uri().optional().allow('', null),
+});
+
+const updateBlogSchema = blogBodySchema.fork(['title', 'meta'], (f) => f.optional());
+
 // Our Work
 const ourWorkBodySchema = Joi.object({
   title: Joi.string().min(3).max(200).required(),
@@ -196,6 +229,8 @@ module.exports = {
   overtimeRejectSchema,
   createInsightSchema,
   updateInsightSchema,
+  blogBodySchema,
+  updateBlogSchema,
   ourWorkBodySchema,
   updateOurWorkSchema,
   caseStudyBodySchema,

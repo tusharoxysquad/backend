@@ -26,6 +26,7 @@ const inquiryRoutes = require('./routes/inquiry.routes');
 const insightRoutes = require('./routes/insight.routes');
 const caseStudyRoutes = require('./routes/caseStudy.routes');
 const ourWorkRoutes = require('./routes/ourWork.routes');
+const blogRoutes = require('./routes/blog.routes');
 
 const app = express();
 
@@ -97,6 +98,7 @@ app.use(`${API_PREFIX}/inquiries`, inquiryRoutes);
 app.use(`${API_PREFIX}/insights`, insightRoutes);
 app.use(`${API_PREFIX}/case-studies`, caseStudyRoutes);
 app.use(`${API_PREFIX}/our-work`, ourWorkRoutes);
+app.use(`${API_PREFIX}/blogs`, blogRoutes);
 
 // 404 handler
 app.use((req, res) => {
