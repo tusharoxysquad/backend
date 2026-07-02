@@ -163,6 +163,7 @@ const caseStudyBodySchema = Joi.object({
   bannerImageUrl: Joi.string().uri().optional().allow('', null),
   logoUrl: Joi.string().uri().optional().allow('', null),
   galleryUrls: Joi.alternatives().try(Joi.array().items(Joi.string().uri()), Joi.string()).optional(),
+  figmaScreenUrls: Joi.alternatives().try(Joi.array().items(Joi.string().uri()), Joi.string()).optional(),
 });
 
 const updateCaseStudySchema = caseStudyBodySchema.fork(['title'], (f) => f.optional());

@@ -8,13 +8,14 @@ const { validate, caseStudyBodySchema, updateCaseStudySchema, parseJsonFields } 
 
 const parseCaseStudyFields = parseJsonFields(
   'hero', 'overview', 'brief', 'challenge', 'solution',
-  'technologyStack', 'features', 'results', 'testimonials', 'galleryUrls'
+  'technologyStack', 'features', 'results', 'testimonials', 'galleryUrls', 'figmaScreenUrls'
 );
 
 const caseStudyUpload = upload.fields([
   { name: 'bannerImage', maxCount: 1 },
   { name: 'logo', maxCount: 1 },
   { name: 'gallery', maxCount: 10 },
+  { name: 'figmaScreens', maxCount: 10 },
 ]);
 
 // Public

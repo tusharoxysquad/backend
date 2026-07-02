@@ -30,6 +30,14 @@ const _processImages = async (files, data = {}, existing = {}) => {
     updates.gallery = await Promise.all(urls.map((url) => uploadImageFromUrl(url, 'case-studies')));
   }
 
+  if (files?.figmaScreens) {
+    const uploaded = await Promise.all(files.figmaScreens.map((f) => uploadImage(f, 'case-studies/figma-screens')));
+    updates.figmaScreens = uploaded;
+  } else if (data.figmaScreenUrls) {
+    const urls = Array.isArray(data.figmaScreenUrls) ? data.figmaScreenUrls : JSON.parse(data.figmaScreenUrls);
+    updates.figmaScreens = await Promise.all(urls.map((url) => uploadImageFromUrl(url, 'case-studies/figma-screens')));
+  }
+
   return updates;
 };
 
@@ -39,6 +47,9 @@ const _deleteAllImages = async (doc) => {
   if (doc.gallery?.length) {
     await Promise.all(doc.gallery.map((g) => deleteImage(g.publicId)));
   }
+  if (doc.figmaScreens?.length) {
+    await Promise.all(doc.figmaScreens.map((f) => deleteImage(f.publicId)));
+  }
 };
 
 const createCaseStudy = async (data, files, userId) => {
@@ -46,6 +57,7 @@ const createCaseStudy = async (data, files, userId) => {
   if (imageUpdates['hero.bannerImage']) data.hero = { ...data.hero, bannerImage: imageUpdates['hero.bannerImage'] };
   if (imageUpdates['hero.logo']) data.hero = { ...data.hero, logo: imageUpdates['hero.logo'] };
   if (imageUpdates.gallery) data.gallery = imageUpdates.gallery;
+  if (imageUpdates.figmaScreens) data.figmaScreens = imageUpdates.figmaScreens;
   data.createdBy = userId;
   data.updatedBy = userId;
   return CaseStudy.create(data);
@@ -88,6 +100,7 @@ const updateCaseStudy = async (id, data, files, userId) => {
   if (imageUpdates['hero.bannerImage']) data.hero = { ...data.hero, bannerImage: imageUpdates['hero.bannerImage'] };
   if (imageUpdates['hero.logo']) data.hero = { ...data.hero, logo: imageUpdates['hero.logo'] };
   if (imageUpdates.gallery) data.gallery = [...(cs.gallery || []), ...imageUpdates.gallery];
+  if (imageUpdates.figmaScreens) data.figmaScreens = [...(cs.figmaScreens || []), ...imageUpdates.figmaScreens];
 
   data.updatedBy = userId;
   return CaseStudy.findByIdAndUpdate(id, data, { new: true, runValidators: true }).select('-__v');
