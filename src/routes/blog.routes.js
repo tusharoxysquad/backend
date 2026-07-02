@@ -6,7 +6,7 @@ const authorize = require('../middleware/authorize');
 const upload = require('../middleware/upload');
 const { validate, blogBodySchema, updateBlogSchema, parseJsonFields } = require('../validations');
 
-const parseBlogFields = parseJsonFields('meta', 'author', 'tags', 'sections');
+const parseBlogFields = parseJsonFields('meta', 'tags', 'sections');
 
 const blogUpload = upload.fields([{ name: 'thumbnail', maxCount: 1 }]);
 

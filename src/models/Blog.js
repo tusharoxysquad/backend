@@ -13,10 +13,6 @@ const blogSchema = new mongoose.Schema(
       description: { type: String, default: null },
       keywords: { type: [String], default: [] },
     },
-    author: {
-      name: { type: String, default: null },
-      image: { type: String, default: null },
-    },
     category: { type: String, trim: true, default: null },
     tags: { type: [String], default: [] },
     readTime: { type: String, default: null },
