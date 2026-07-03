@@ -74,6 +74,21 @@ const options = {
             newPassword: { type: 'string', example: 'NewPass@456' },
           },
         },
+        VerifyOtpBody: {
+          type: 'object',
+          required: ['email', 'otp'],
+          properties: {
+            email: { type: 'string', format: 'email', example: 'john@example.com' },
+            otp: { type: 'string', example: '482913', description: '6-digit code emailed to the user' },
+          },
+        },
+        ResendOtpBody: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: { type: 'string', format: 'email', example: 'john@example.com' },
+          },
+        },
         CreateUserBody: {
           type: 'object',
           required: ['name', 'email', 'password'],
@@ -257,6 +272,10 @@ const options = {
         },
         BadRequest: {
           description: 'Validation error',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+        },
+        Conflict: {
+          description: 'Conflict — resource already exists or already in the target state',
           content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
         },
       },

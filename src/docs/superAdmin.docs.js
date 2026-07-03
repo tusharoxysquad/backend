@@ -4,6 +4,9 @@
  *   post:
  *     tags: [Super Admin]
  *     summary: Create Admin
+ *     description: >
+ *       Does NOT return a token — an OTP is emailed to the new account, which must be
+ *       verified via POST /api/v1/auth/verify-otp before that account can log in.
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -14,7 +17,7 @@
  *             $ref: '#/components/schemas/CreateUserBody'
  *     responses:
  *       201:
- *         description: Admin created
+ *         description: Admin created — OTP emailed, verification required before login
  *         content:
  *           application/json:
  *             schema:
@@ -23,11 +26,16 @@
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
  *         $ref: '#/components/responses/Forbidden'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
  *
  * /api/v1/super-admin/create-employee:
  *   post:
  *     tags: [Super Admin]
  *     summary: Create Employee
+ *     description: >
+ *       Does NOT return a token — an OTP is emailed to the new account, which must be
+ *       verified via POST /api/v1/auth/verify-otp before that account can log in.
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -38,7 +46,7 @@
  *             $ref: '#/components/schemas/CreateUserBody'
  *     responses:
  *       201:
- *         description: Employee created
+ *         description: Employee created — OTP emailed, verification required before login
  *         content:
  *           application/json:
  *             schema:
@@ -47,6 +55,8 @@
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
  *         $ref: '#/components/responses/Forbidden'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
  *
  * /api/v1/super-admin/admins:
  *   get:
