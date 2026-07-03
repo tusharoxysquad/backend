@@ -13,7 +13,8 @@ const login = async ({ email, password }) => {
   if (!isMatch) throw ApiError.unauthorized('Invalid email or password');
 
   if (!user.isVerified) {
-    throw ApiError.forbidden('Email not verified. Please verify the OTP sent to your email before logging in.');
+    await issueAndSendOtp(user);
+    throw ApiError.forbidden('Email not verified. A new OTP has been sent to your email — please verify before logging in.');
   }
 
   const token = generateToken({ id: user._id, role: user.role });

@@ -1,13 +1,26 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const dns = require('dns');
+
+// Prefer IPv4 for outbound connections — avoids rotating-IPv6 mismatches with
+// services (e.g. Brevo) that authorize requests by IP address
+dns.setDefaultResultOrder('ipv4first');
 
 // Ensure logs directory exists before logger initialises
 const logsDir = path.join(__dirname, 'logs');
 if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir);
 
 // Fail fast if required env vars are missing
-const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+const REQUIRED_ENV = [
+  'MONGO_URI',
+  'JWT_SECRET',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET',
+  'BREVO_API_KEY',
+  'EMAIL_FROM_EMAIL',
+];
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(`Missing required environment variables: ${missing.join(', ')}`);

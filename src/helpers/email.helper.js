@@ -1,4 +1,4 @@
-const transporter = require('../config/mailer');
+const { sendTransactionalEmail } = require('../config/mailer');
 
 /**
  * Send an OTP verification email
@@ -7,9 +7,9 @@ const transporter = require('../config/mailer');
  * @param {string} otp - plaintext OTP to embed in the email
  */
 const sendOtpEmail = async (to, name, otp) => {
-  await transporter.sendMail({
-    from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+  await sendTransactionalEmail({
     to,
+    toName: name,
     subject: 'Verify your email — OTP inside',
     html: `
       <p>Hi ${name},</p>
