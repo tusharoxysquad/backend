@@ -201,8 +201,6 @@ const caseStudyBodySchema = Joi.object({
   title: Joi.string().min(3).max(200).required(),
   clientName: Joi.string().max(150).optional().allow('', null),
   industry: Joi.string().max(100).optional().allow('', null),
-  year: Joi.string().max(4).optional().allow('', null),
-  status: Joi.string().valid('draft', 'published', 'archived').optional(),
   hero: Joi.object().optional(),
   overview: Joi.object().optional(),
   brief: Joi.object().optional(),

@@ -58,8 +58,6 @@ const getAllCaseStudies = async (query) => {
   const filter = {};
 
   if (query.industry) filter.industry = query.industry;
-  if (query.status) filter.status = query.status;
-  if (query.year) filter.year = query.year;
 
   if (query.search) {
     const regex = new RegExp(query.search, 'i');

@@ -11,8 +11,6 @@ const caseStudySchema = new mongoose.Schema(
     slug: { type: String, unique: true, lowercase: true, trim: true },
     clientName: { type: String, trim: true },
     industry: { type: String, trim: true },
-    year: { type: String },
-    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     hero: {
       title: { type: String, trim: true },
       subtitle: { type: String, trim: true },
@@ -50,7 +48,5 @@ caseStudySchema.pre('save', function (next) {
 });
 
 caseStudySchema.index({ industry: 1 });
-caseStudySchema.index({ status: 1 });
-caseStudySchema.index({ year: 1 });
 
 module.exports = mongoose.model('CaseStudy', caseStudySchema);
