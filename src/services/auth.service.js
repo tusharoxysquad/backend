@@ -2,7 +2,7 @@ const User = require('../models/User');
 const { generateToken } = require('../config/jwt');
 const ApiError = require('../utils/apiError');
 const { ROLES } = require('../constants');
-const { issueAndSendOtp } = require('../helpers/otp.helper');
+const { issueAndSendOtp, issueOtpOnly } = require('../helpers/otp.helper');
 const { sendWelcomeEmail } = require('../helpers/email.helper');
 const logger = require('../utils/logger');
 
@@ -92,11 +92,11 @@ const createAdmin = async (creatorId, data) => {
 
   const plainPassword = data.password;
   const admin = await User.create({ ...data, role: ROLES.ADMIN, createdBy: creatorId });
-  await issueAndSendOtp(admin);
+  const otp = await issueOtpOnly(admin);
 
   const loginUrl = `${process.env.CLIENT_URL}/admin/login`;
   try {
-    await sendWelcomeEmail(admin.email, admin.name, plainPassword, loginUrl, ROLES.ADMIN);
+    await sendWelcomeEmail(admin.email, admin.name, plainPassword, otp, loginUrl, ROLES.ADMIN);
     logger.info(`Welcome email sent to admin: ${admin.email}`);
   } catch (emailErr) {
     logger.error(`Failed to send welcome email to admin ${admin.email}: ${emailErr.message}`);
@@ -114,11 +114,11 @@ const createEmployee = async (creatorId, data) => {
 
   const plainPassword = data.password;
   const employee = await User.create({ ...data, role: ROLES.EMPLOYEE, createdBy: creatorId });
-  await issueAndSendOtp(employee);
+  const otp = await issueOtpOnly(employee);
 
   const loginUrl = `${process.env.CLIENT_URL}/employee/login`;
   try {
-    await sendWelcomeEmail(employee.email, employee.name, plainPassword, loginUrl, ROLES.EMPLOYEE);
+    await sendWelcomeEmail(employee.email, employee.name, plainPassword, otp, loginUrl, ROLES.EMPLOYEE);
     logger.info(`Welcome email sent to employee: ${employee.email}`);
   } catch (emailErr) {
     logger.error(`Failed to send welcome email to employee ${employee.email}: ${emailErr.message}`);
