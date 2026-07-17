@@ -3,6 +3,8 @@ const { generateToken } = require('../config/jwt');
 const ApiError = require('../utils/apiError');
 const { ROLES } = require('../constants');
 const { issueAndSendOtp } = require('../helpers/otp.helper');
+const { sendWelcomeEmail } = require('../helpers/email.helper');
+const logger = require('../utils/logger');
 
 const login = async ({ email, password }) => {
   const user = await User.findOne({ email }).select('+password');
@@ -88,10 +90,18 @@ const createAdmin = async (creatorId, data) => {
   const exists = await User.findOne({ email: data.email });
   if (exists) throw ApiError.conflict('Email already registered');
 
+  const plainPassword = data.password;
   const admin = await User.create({ ...data, role: ROLES.ADMIN, createdBy: creatorId });
   await issueAndSendOtp(admin);
 
-  const loginUrl = `${process.env.CLIENT_URL}/login`;
+  const loginUrl = `${process.env.CLIENT_URL}/admin/login`;
+  try {
+    await sendWelcomeEmail(admin.email, admin.name, plainPassword, loginUrl, ROLES.ADMIN);
+    logger.info(`Welcome email sent to admin: ${admin.email}`);
+  } catch (emailErr) {
+    logger.error(`Failed to send welcome email to admin ${admin.email}: ${emailErr.message}`);
+  }
+
   return { user: admin, loginUrl };
 };
 
@@ -102,10 +112,18 @@ const createEmployee = async (creatorId, data) => {
   const exists = await User.findOne({ email: data.email });
   if (exists) throw ApiError.conflict('Email already registered');
 
+  const plainPassword = data.password;
   const employee = await User.create({ ...data, role: ROLES.EMPLOYEE, createdBy: creatorId });
   await issueAndSendOtp(employee);
 
-  const loginUrl = `${process.env.CLIENT_URL}/login`;
+  const loginUrl = `${process.env.CLIENT_URL}/employee/login`;
+  try {
+    await sendWelcomeEmail(employee.email, employee.name, plainPassword, loginUrl, ROLES.EMPLOYEE);
+    logger.info(`Welcome email sent to employee: ${employee.email}`);
+  } catch (emailErr) {
+    logger.error(`Failed to send welcome email to employee ${employee.email}: ${emailErr.message}`);
+  }
+
   return { user: employee, loginUrl };
 };
 
