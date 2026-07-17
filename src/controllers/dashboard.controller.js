@@ -3,7 +3,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const { sendSuccess } = require('../utils/response');
 
 const superAdminDashboard = asyncHandler(async (req, res) => {
-  const data = await dashboardService.getSuperAdminDashboard();
+  const data = await dashboardService.getSuperAdminDashboard(req.user._id);
   sendSuccess(res, 'Super admin dashboard fetched', data);
 });
 

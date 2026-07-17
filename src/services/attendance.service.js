@@ -261,7 +261,7 @@ const getAllUsersAttendance = async (query) => {
 
   const [records, total] = await Promise.all([
     Attendance.find(filter)
-      .populate('employeeId', 'name email department designation role')
+      .populate('employeeId', 'name email department designation role reportingAdmin')
       .sort({ date: -1 })
       .skip(skip)
       .limit(limit),

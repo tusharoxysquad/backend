@@ -48,7 +48,41 @@ const getWeekendsInMonth = (year, month) => {
   return weekends;
 };
 
-const getSuperAdminDashboard = async () => {
+// Personal check-in/check-out status for the logged-in user (admin, super-admin, or employee)
+const getAttendanceOverviewForUser = async (userId, now = new Date()) => {
+  const today = toDateString(now);
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = toDateString(yesterday);
+
+  const [todayAttendance, yesterdayAttendance] = await Promise.all([
+    Attendance.findOne({ employeeId: userId, date: today }).lean(),
+    Attendance.findOne({ employeeId: userId, date: yesterdayStr }).lean(),
+  ]);
+
+  let currentStatus = 'NOT_CHECKED_IN';
+  if (todayAttendance?.checkInTime && !todayAttendance?.checkOutTime) currentStatus = 'CHECKED_IN';
+  else if (todayAttendance?.checkOutTime) currentStatus = 'CHECKED_OUT';
+  else if (todayAttendance?.attendanceStatus === ATTENDANCE_STATUS.ABSENT) currentStatus = 'ABSENT';
+
+  const todayWorkedHours = todayAttendance?.totalWorkedHours
+    ? fmtHours(todayAttendance.totalWorkedHours)
+    : todayAttendance?.checkInTime
+    ? fmtHours((now - new Date(todayAttendance.checkInTime)) / (1000 * 60 * 60))
+    : '0h 0m';
+
+  return {
+    currentStatus,
+    checkInTime: fmtTime(todayAttendance?.checkInTime),
+    checkOutTime: fmtTime(todayAttendance?.checkOutTime),
+    todayWorkedHours,
+    yesterdayWorkedHours: fmtHours(yesterdayAttendance?.totalWorkedHours || 0),
+    shiftTiming: '10:00 AM - 7:00 PM',
+    lateArrival: todayAttendance?.lateArrival || false,
+  };
+};
+
+const getSuperAdminDashboard = async (superAdminId) => {
   const today = toDateString();
   const now = new Date();
   const { start, end } = getMonthRange(now.getFullYear(), now.getMonth() + 1);
@@ -75,32 +109,38 @@ const getSuperAdminDashboard = async () => {
     Attendance.countDocuments({ date: { $gte: monthStart, $lte: monthEnd } }),
   ]);
 
+  const attendanceOverview = await getAttendanceOverviewForUser(superAdminId, now);
+
   return {
     users: { totalAdmins, totalEmployees, activeUsers },
     today: { present: todayPresent, absent: todayAbsent },
     pending: { attendance: pendingAttendance, leaves: pendingLeaves },
     monthlyAttendance,
+    attendanceOverview,
   };
 };
 
 const getAdminDashboard = async (adminId) => {
   const today = toDateString();
+  const now = new Date();
 
   const teamMembers = await User.find({ reportingAdmin: adminId, role: ROLES.EMPLOYEE }).select('_id');
   const teamIds = teamMembers.map((u) => u._id);
 
-  const [totalTeam, todayPresent, todayAbsent, pendingLeaves, pendingAttendance] = await Promise.all([
+  const [totalTeam, todayPresent, todayAbsent, pendingLeaves, pendingAttendance, attendanceOverview] = await Promise.all([
     User.countDocuments({ reportingAdmin: adminId, role: ROLES.EMPLOYEE }),
     Attendance.countDocuments({ employeeId: { $in: teamIds }, date: today, attendanceStatus: ATTENDANCE_STATUS.PRESENT }),
     Attendance.countDocuments({ employeeId: { $in: teamIds }, date: today, attendanceStatus: ATTENDANCE_STATUS.ABSENT }),
     Leave.countDocuments({ employeeId: { $in: teamIds }, status: LEAVE_STATUS.PENDING }),
     Attendance.countDocuments({ employeeId: { $in: teamIds }, approvalStatus: APPROVAL_STATUS.PENDING }),
+    getAttendanceOverviewForUser(adminId, now),
   ]);
 
   return {
     team: { total: totalTeam },
     today: { present: todayPresent, absent: todayAbsent },
     pending: { leaves: pendingLeaves, attendance: pendingAttendance },
+    attendanceOverview,
   };
 };
 
