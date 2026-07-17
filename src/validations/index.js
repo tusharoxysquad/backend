@@ -170,10 +170,10 @@ const blogSectionSchema = Joi.object({
 const blogBodySchema = Joi.object({
   title: Joi.string().min(3).max(200).required(),
   meta: Joi.object({
-    title: Joi.string().required(),
-    description: Joi.string().required(),
+    title: Joi.string().optional().allow('', null),
+    description: Joi.string().optional().allow('', null),
     keywords: Joi.array().items(Joi.string()).optional(),
-  }).required(),
+  }).optional(),
   category: Joi.string().optional().allow('', null),
   tags: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()).optional(),
   readTime: Joi.string().optional().allow('', null),
@@ -182,7 +182,7 @@ const blogBodySchema = Joi.object({
   thumbnailUrl: Joi.string().uri().optional().allow('', null),
 });
 
-const updateBlogSchema = blogBodySchema.fork(['title', 'meta'], (f) => f.optional());
+const updateBlogSchema = blogBodySchema.fork(['title'], (f) => f.optional());
 
 // Our Work
 const ourWorkBodySchema = Joi.object({
