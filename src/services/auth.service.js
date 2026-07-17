@@ -95,13 +95,8 @@ const createAdmin = async (creatorId, data) => {
   const otp = await issueOtpOnly(admin);
 
   const loginUrl = `${process.env.CLIENT_URL}/admin/login`;
-  try {
-    await sendWelcomeEmail(admin.email, admin.name, plainPassword, otp, loginUrl, ROLES.ADMIN);
-    logger.info(`Welcome email sent to admin: ${admin.email}`);
-  } catch (emailErr) {
-    logger.error(`Failed to send welcome email to admin ${admin.email}: ${emailErr.message}`);
-  }
-
+  await sendWelcomeEmail(admin.email, admin.name, plainPassword, otp, loginUrl, ROLES.ADMIN);
+  logger.info(`Welcome email sent to admin: ${admin.email}`);
   return { user: admin, loginUrl };
 };
 
@@ -117,13 +112,8 @@ const createEmployee = async (creatorId, data) => {
   const otp = await issueOtpOnly(employee);
 
   const loginUrl = `${process.env.CLIENT_URL}/employee/login`;
-  try {
-    await sendWelcomeEmail(employee.email, employee.name, plainPassword, otp, loginUrl, ROLES.EMPLOYEE);
-    logger.info(`Welcome email sent to employee: ${employee.email}`);
-  } catch (emailErr) {
-    logger.error(`Failed to send welcome email to employee ${employee.email}: ${emailErr.message}`);
-  }
-
+  await sendWelcomeEmail(employee.email, employee.name, plainPassword, otp, loginUrl, ROLES.EMPLOYEE);
+  logger.info(`Welcome email sent to employee: ${employee.email}`);
   return { user: employee, loginUrl };
 };
 

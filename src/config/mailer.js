@@ -1,10 +1,17 @@
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-/**
- * Send a transactional email via Brevo's HTTP API
- * @param {{ to: string, toName: string, subject: string, html: string }} params
- */
 const sendTransactionalEmail = async ({ to, toName, subject, html }) => {
+  const payload = {
+    sender: { name: process.env.EMAIL_FROM_NAME, email: process.env.EMAIL_FROM_EMAIL },
+    to: [{ email: to, name: toName }],
+    subject,
+    htmlContent: html,
+  };
+
+  console.log('[Brevo] Sending email to:', to, '| Subject:', subject);
+  console.log('[Brevo] BREVO_API_KEY set:', !!process.env.BREVO_API_KEY);
+  console.log('[Brevo] EMAIL_FROM_EMAIL:', process.env.EMAIL_FROM_EMAIL);
+
   const res = await fetch(BREVO_API_URL, {
     method: 'POST',
     headers: {
@@ -12,18 +19,16 @@ const sendTransactionalEmail = async ({ to, toName, subject, html }) => {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify({
-      sender: { name: process.env.EMAIL_FROM_NAME, email: process.env.EMAIL_FROM_EMAIL },
-      to: [{ email: to, name: toName }],
-      subject,
-      htmlContent: html,
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
     const body = await res.text();
+    console.error('[Brevo] ERROR response:', res.status, body);
     throw new Error(`Brevo API error (${res.status}): ${body}`);
   }
+
+  console.log('[Brevo] Email sent successfully to:', to);
 };
 
 module.exports = { sendTransactionalEmail };
