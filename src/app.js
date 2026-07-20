@@ -38,6 +38,8 @@ const allowedOrigins = [
   'https://www.oxysquad.com',
   'https://oxysquad-staging.netlify.app',
   'https://frontend-rho-bice-97.vercel.app',
+  'http://attendance.oxysquad.com',
+  'https://attendance.oxysquad.com',
   ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : []),
 ];
 
