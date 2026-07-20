@@ -7,6 +7,35 @@ const { toDateString, calcHours, getWorkingDaysInMonth } = require('../utils/dat
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const { notify } = require('../helpers/notification.helper');
 
+const EXPORT_LIMIT = 5000;
+
+/**
+ * Build a Mongo filter for attendance queries from shared query params:
+ * startDate/endDate (explicit range), or month+year, plus status/approvalStatus/employeeId.
+ */
+const buildAttendanceFilter = (query = {}) => {
+  const filter = {};
+
+  if (query.startDate || query.endDate) {
+    filter.date = {};
+    if (query.startDate) filter.date.$gte = query.startDate;
+    if (query.endDate) filter.date.$lte = query.endDate;
+  } else if (query.month && query.year) {
+    const year = parseInt(query.year);
+    const month = parseInt(query.month);
+    filter.date = {
+      $gte: `${year}-${String(month).padStart(2, '0')}-01`,
+      $lte: `${year}-${String(month).padStart(2, '0')}-31`,
+    };
+  }
+
+  if (query.status) filter.attendanceStatus = query.status;
+  if (query.approvalStatus) filter.approvalStatus = query.approvalStatus;
+  if (query.employeeId) filter.employeeId = query.employeeId;
+
+  return filter;
+};
+
 const checkIn = async (employeeId) => {
   const today = toDateString();
 
@@ -65,22 +94,7 @@ const getTodayAttendance = async (employeeId) => {
 
 const getHistory = async (employeeId, query) => {
   const { page, limit, skip } = getPagination(query);
-  const filter = { employeeId };
-
-  if (query.startDate || query.endDate) {
-    filter.date = {};
-    if (query.startDate) filter.date.$gte = query.startDate;
-    if (query.endDate) filter.date.$lte = query.endDate;
-  } else if (query.month && query.year) {
-    const year = parseInt(query.year);
-    const month = parseInt(query.month);
-    const start = `${year}-${String(month).padStart(2, '0')}-01`;
-    const end = `${year}-${String(month).padStart(2, '0')}-31`;
-    filter.date = { $gte: start, $lte: end };
-  }
-
-  if (query.status) filter.attendanceStatus = query.status;
-  if (query.approvalStatus) filter.approvalStatus = query.approvalStatus;
+  const filter = { ...buildAttendanceFilter(query), employeeId };
 
   const [records, total] = await Promise.all([
     Attendance.find(filter).sort({ date: -1 }).skip(skip).limit(limit),
@@ -240,24 +254,7 @@ const rejectAttendance = async (attendanceId, approverId, approverRole, rejectio
 
 const getAllUsersAttendance = async (query) => {
   const { page, limit, skip } = getPagination(query);
-  const filter = {};
-
-  if (query.startDate || query.endDate) {
-    filter.date = {};
-    if (query.startDate) filter.date.$gte = query.startDate;
-    if (query.endDate) filter.date.$lte = query.endDate;
-  } else if (query.month && query.year) {
-    const year = parseInt(query.year);
-    const month = parseInt(query.month);
-    filter.date = {
-      $gte: `${year}-${String(month).padStart(2, '0')}-01`,
-      $lte: `${year}-${String(month).padStart(2, '0')}-31`,
-    };
-  }
-
-  if (query.status) filter.attendanceStatus = query.status;
-  if (query.approvalStatus) filter.approvalStatus = query.approvalStatus;
-  if (query.employeeId) filter.employeeId = query.employeeId;
+  const filter = buildAttendanceFilter(query);
 
   const [records, total] = await Promise.all([
     Attendance.find(filter)
@@ -269,6 +266,26 @@ const getAllUsersAttendance = async (query) => {
   ]);
 
   return { records, pagination: buildPaginationMeta(total, page, limit) };
+};
+
+/**
+ * Unpaginated variant for document export — same filters as getAllUsersAttendance,
+ * capped at EXPORT_LIMIT records instead of the standard page size.
+ */
+const getAllUsersAttendanceForExport = async (query) => {
+  const filter = buildAttendanceFilter(query);
+  return Attendance.find(filter)
+    .populate('employeeId', 'name email department designation role reportingAdmin')
+    .sort({ date: -1 })
+    .limit(EXPORT_LIMIT);
+};
+
+/**
+ * Unpaginated variant of getHistory for a single employee's document export.
+ */
+const getHistoryForExport = async (employeeId, query) => {
+  const filter = { ...buildAttendanceFilter(query), employeeId };
+  return Attendance.find(filter).sort({ date: -1 }).limit(EXPORT_LIMIT);
 };
 
 const markAbsent = async (date) => {
@@ -352,4 +369,6 @@ module.exports = {
   markAbsent,
   autoCheckout,
   getAllUsersAttendance,
+  getAllUsersAttendanceForExport,
+  getHistoryForExport,
 };

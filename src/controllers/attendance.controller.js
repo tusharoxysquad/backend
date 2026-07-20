@@ -1,6 +1,20 @@
 const attendanceService = require('../services/attendance.service');
 const asyncHandler = require('../utils/asyncHandler');
-const { sendSuccess, sendPaginated } = require('../utils/response');
+const { sendSuccess, sendPaginated, sendDocxFile } = require('../utils/response');
+const { buildAttendanceDocx } = require('../helpers/attendanceExport.helper');
+
+/**
+ * Turn the export query params into a human-readable subtitle line for the report.
+ */
+const describeRange = (query) => {
+  if (query.startDate || query.endDate) {
+    return `Date range: ${query.startDate || '—'} to ${query.endDate || '—'}`;
+  }
+  if (query.month && query.year) {
+    return `Month: ${query.month}/${query.year}`;
+  }
+  return 'All time';
+};
 
 const checkIn = asyncHandler(async (req, res) => {
   const attendance = await attendanceService.checkIn(req.user._id);
@@ -74,6 +88,28 @@ const getAllUsersAttendance = asyncHandler(async (req, res) => {
   sendPaginated(res, 'All users attendance fetched', records, pagination);
 });
 
+const exportAllUsersAttendance = asyncHandler(async (req, res) => {
+  const records = await attendanceService.getAllUsersAttendanceForExport(req.query);
+  const buffer = await buildAttendanceDocx({
+    title: req.query.employeeId ? 'Employee Attendance Report' : 'Organisation Attendance Report',
+    subtitle: describeRange(req.query),
+    records,
+    showEmployeeColumn: true,
+  });
+  sendDocxFile(res, buffer, `attendance-report-${Date.now()}.docx`);
+});
+
+const exportMyAttendance = asyncHandler(async (req, res) => {
+  const records = await attendanceService.getHistoryForExport(req.user._id, req.query);
+  const buffer = await buildAttendanceDocx({
+    title: `Attendance Report — ${req.user.name}`,
+    subtitle: describeRange(req.query),
+    records,
+    showEmployeeColumn: false,
+  });
+  sendDocxFile(res, buffer, `my-attendance-${Date.now()}.docx`);
+});
+
 module.exports = {
   checkIn,
   checkOut,
@@ -86,4 +122,6 @@ module.exports = {
   approveAttendance,
   rejectAttendance,
   getAllUsersAttendance,
+  exportAllUsersAttendance,
+  exportMyAttendance,
 };

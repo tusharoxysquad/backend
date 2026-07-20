@@ -1,6 +1,14 @@
+const logger = require('../utils/logger');
+
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 const sendTransactionalEmail = async ({ to, toName, subject, html }) => {
+  if (!process.env.BREVO_API_KEY || !process.env.EMAIL_FROM_EMAIL) {
+    logger.error(
+      `[Brevo] Missing mailer config — BREVO_API_KEY set: ${!!process.env.BREVO_API_KEY}, EMAIL_FROM_EMAIL set: ${!!process.env.EMAIL_FROM_EMAIL}`
+    );
+  }
+
   const payload = {
     sender: { name: process.env.EMAIL_FROM_NAME, email: process.env.EMAIL_FROM_EMAIL },
     to: [{ email: to, name: toName }],
@@ -8,9 +16,7 @@ const sendTransactionalEmail = async ({ to, toName, subject, html }) => {
     htmlContent: html,
   };
 
-  console.log('[Brevo] Sending email to:', to, '| Subject:', subject);
-  console.log('[Brevo] BREVO_API_KEY set:', !!process.env.BREVO_API_KEY);
-  console.log('[Brevo] EMAIL_FROM_EMAIL:', process.env.EMAIL_FROM_EMAIL);
+  logger.info(`[Brevo] Sending email to: ${to} | Subject: ${subject}`);
 
   const res = await fetch(BREVO_API_URL, {
     method: 'POST',
@@ -22,13 +28,21 @@ const sendTransactionalEmail = async ({ to, toName, subject, html }) => {
     body: JSON.stringify(payload),
   });
 
+  const body = await res.text();
+
   if (!res.ok) {
-    const body = await res.text();
-    console.error('[Brevo] ERROR response:', res.status, body);
+    logger.error(`[Brevo] ERROR response for ${to}: ${res.status} ${body}`);
     throw new Error(`Brevo API error (${res.status}): ${body}`);
   }
 
-  console.log('[Brevo] Email sent successfully to:', to);
+  const messageId = (() => {
+    try {
+      return JSON.parse(body).messageId;
+    } catch {
+      return undefined;
+    }
+  })();
+  logger.info(`[Brevo] Email accepted for ${to}${messageId ? ` | messageId: ${messageId}` : ''}`);
 };
 
 module.exports = { sendTransactionalEmail };

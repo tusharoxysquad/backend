@@ -13,6 +13,7 @@ router.post('/check-in', attendanceController.checkIn);
 router.post('/check-out', attendanceController.checkOut);
 router.get('/today', attendanceController.getTodayAttendance);
 router.get('/history', attendanceController.getHistory);
+router.get('/history/export', attendanceController.exportMyAttendance);
 router.get('/monthly', attendanceController.getMonthlyAttendance);
 
 // Admin + Super Admin routes
@@ -20,6 +21,11 @@ router.get(
   '/all',
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   attendanceController.getAllUsersAttendance
+);
+router.get(
+  '/export',
+  authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  attendanceController.exportAllUsersAttendance
 );
 router.get(
   '/employee/:employeeId',

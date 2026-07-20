@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const { generateToken } = require('../config/jwt');
 const ApiError = require('../utils/apiError');
-const { ROLES } = require('../constants');
+const { ROLES, APP_URLS } = require('../constants');
 const { issueAndSendOtp, issueOtpOnly } = require('../helpers/otp.helper');
 const { sendWelcomeEmail } = require('../helpers/email.helper');
 const logger = require('../utils/logger');
@@ -20,7 +20,7 @@ const login = async ({ email, password }) => {
   }
 
   const token = generateToken({ id: user._id, role: user.role });
-  const loginUrl = `${process.env.CLIENT_URL}/login`;
+  const loginUrl = APP_URLS.LOGIN;
 
   return { token, user, loginUrl };
 };
@@ -42,7 +42,7 @@ const verifyOtp = async ({ email, otp }) => {
   await user.save({ validateBeforeSave: false });
 
   const token = generateToken({ id: user._id, role: user.role });
-  const loginUrl = `${process.env.CLIENT_URL}/login`;
+  const loginUrl = APP_URLS.LOGIN;
 
   return { token, user, loginUrl };
 };
@@ -79,7 +79,7 @@ const setupSuperAdmin = async (data) => {
   const superAdmin = await User.create({ ...data, role: ROLES.SUPER_ADMIN });
   await issueAndSendOtp(superAdmin);
 
-  const loginUrl = `${process.env.CLIENT_URL}/login`;
+  const loginUrl = APP_URLS.LOGIN;
   return { user: superAdmin, loginUrl };
 };
 
@@ -94,10 +94,16 @@ const createAdmin = async (creatorId, data) => {
   const admin = await User.create({ ...data, role: ROLES.ADMIN, createdBy: creatorId });
   const otp = await issueOtpOnly(admin);
 
-  const loginUrl = `${process.env.CLIENT_URL}/admin/login`;
-  await sendWelcomeEmail(admin.email, admin.name, plainPassword, otp, loginUrl, ROLES.ADMIN);
-  logger.info(`Welcome email sent to admin: ${admin.email}`);
-  return { user: admin, loginUrl };
+  const loginUrl = APP_URLS.ADMIN_LOGIN;
+  let emailSent = true;
+  try {
+    await sendWelcomeEmail(admin.email, admin.name, plainPassword, otp, loginUrl, ROLES.ADMIN);
+    logger.info(`Welcome email sent to admin: ${admin.email}`);
+  } catch (err) {
+    emailSent = false;
+    logger.error(`Failed to send welcome email to admin ${admin.email}: ${err.message}`);
+  }
+  return { user: admin, loginUrl, emailSent };
 };
 
 /**
@@ -111,10 +117,16 @@ const createEmployee = async (creatorId, data) => {
   const employee = await User.create({ ...data, role: ROLES.EMPLOYEE, createdBy: creatorId });
   const otp = await issueOtpOnly(employee);
 
-  const loginUrl = `${process.env.CLIENT_URL}/employee/login`;
-  await sendWelcomeEmail(employee.email, employee.name, plainPassword, otp, loginUrl, ROLES.EMPLOYEE);
-  logger.info(`Welcome email sent to employee: ${employee.email}`);
-  return { user: employee, loginUrl };
+  const loginUrl = APP_URLS.EMPLOYEE_LOGIN;
+  let emailSent = true;
+  try {
+    await sendWelcomeEmail(employee.email, employee.name, plainPassword, otp, loginUrl, ROLES.EMPLOYEE);
+    logger.info(`Welcome email sent to employee: ${employee.email}`);
+  } catch (err) {
+    emailSent = false;
+    logger.error(`Failed to send welcome email to employee ${employee.email}: ${err.message}`);
+  }
+  return { user: employee, loginUrl, emailSent };
 };
 
 module.exports = {

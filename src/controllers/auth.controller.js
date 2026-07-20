@@ -27,13 +27,19 @@ const setupSuperAdmin = asyncHandler(async (req, res) => {
 });
 
 const createAdmin = asyncHandler(async (req, res) => {
-  const { user, loginUrl } = await authService.createAdmin(req.user._id, req.body);
-  sendSuccess(res, 'Admin created. An OTP has been sent to the email — verify it before logging in.', { user, loginUrl }, 201);
+  const { user, loginUrl, emailSent } = await authService.createAdmin(req.user._id, req.body);
+  const message = emailSent
+    ? 'Admin created. An OTP has been sent to the email — verify it before logging in.'
+    : 'Admin created, but the welcome email failed to send. Please share the login details manually or reset the password.';
+  sendSuccess(res, message, { user, loginUrl, emailSent }, 201);
 });
 
 const createEmployee = asyncHandler(async (req, res) => {
-  const { user, loginUrl } = await authService.createEmployee(req.user._id, req.body);
-  sendSuccess(res, 'Employee created. An OTP has been sent to the email — verify it before logging in.', { user, loginUrl }, 201);
+  const { user, loginUrl, emailSent } = await authService.createEmployee(req.user._id, req.body);
+  const message = emailSent
+    ? 'Employee created. An OTP has been sent to the email — verify it before logging in.'
+    : 'Employee created, but the welcome email failed to send. Please share the login details manually or reset the password.';
+  sendSuccess(res, message, { user, loginUrl, emailSent }, 201);
 });
 
 const verifyOtp = asyncHandler(async (req, res) => {

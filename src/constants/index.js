@@ -52,6 +52,18 @@ const PAGINATION = {
   MAX_LIMIT: 100,
 };
 
+// Role-specific login URLs sent in welcome/OTP emails.
+// Hardcoded to the production domain so links are always correct even if
+// CLIENT_URL is missing/stale on the host; override per-env via the *_LOGIN_URL vars.
+const stripTrailingSlash = (url) => url.replace(/\/+$/, '');
+const APP_URLS = {
+  ADMIN_LOGIN: process.env.ADMIN_LOGIN_URL || 'https://attendance.oxysquad.com/admin/login',
+  EMPLOYEE_LOGIN: process.env.EMPLOYEE_LOGIN_URL || 'https://attendance.oxysquad.com/employee/login',
+  LOGIN: process.env.CLIENT_URL
+    ? `${stripTrailingSlash(process.env.CLIENT_URL)}/login`
+    : 'https://attendance.oxysquad.com/login',
+};
+
 module.exports = {
   ROLES,
   ATTENDANCE_STATUS,
@@ -61,4 +73,5 @@ module.exports = {
   LEAVE_STATUS,
   SHIFT_HOURS,
   PAGINATION,
+  APP_URLS,
 };

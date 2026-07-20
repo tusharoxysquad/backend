@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const ApiError = require('../utils/apiError');
-const { ROLES } = require('../constants');
+const { ROLES, APP_URLS } = require('../constants');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const { issueOtpOnly } = require('../helpers/otp.helper');
 const { sendWelcomeEmail } = require('../helpers/email.helper');
@@ -14,13 +14,18 @@ const createUser = async (creatorId, userData) => {
   const user = await User.create({ ...userData, createdBy: creatorId });
   const otp = await issueOtpOnly(user);
 
-  const loginPath = user.role === ROLES.ADMIN ? '/admin/login' : '/employee/login';
-  const loginUrl = `${process.env.CLIENT_URL}${loginPath}`;
+  const loginUrl = user.role === ROLES.ADMIN ? APP_URLS.ADMIN_LOGIN : APP_URLS.EMPLOYEE_LOGIN;
 
-  await sendWelcomeEmail(user.email, user.name, plainPassword, otp, loginUrl, user.role);
-  logger.info(`Welcome email sent to ${user.role}: ${user.email}`);
+  let emailSent = true;
+  try {
+    await sendWelcomeEmail(user.email, user.name, plainPassword, otp, loginUrl, user.role);
+    logger.info(`Welcome email sent to ${user.role}: ${user.email}`);
+  } catch (err) {
+    emailSent = false;
+    logger.error(`Failed to send welcome email to ${user.role} ${user.email}: ${err.message}`);
+  }
 
-  return { user, loginUrl };
+  return { user, loginUrl, emailSent };
 };
 
 const getAllByRole = async (role, query) => {

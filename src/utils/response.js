@@ -28,4 +28,16 @@ const sendPaginated = (res, message, data, pagination) => {
   });
 };
 
-module.exports = { sendSuccess, sendError, sendPaginated };
+/**
+ * Stream a generated .docx file as a download
+ */
+const sendDocxFile = (res, buffer, filename) => {
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  );
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  return res.status(200).send(buffer);
+};
+
+module.exports = { sendSuccess, sendError, sendPaginated, sendDocxFile };

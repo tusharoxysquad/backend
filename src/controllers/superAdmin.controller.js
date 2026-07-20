@@ -4,19 +4,25 @@ const { sendSuccess, sendPaginated } = require('../utils/response');
 const { ROLES } = require('../constants');
 
 const createAdmin = asyncHandler(async (req, res) => {
-  const { user, loginUrl } = await userService.createUser(req.user._id, {
+  const { user, loginUrl, emailSent } = await userService.createUser(req.user._id, {
     ...req.body,
     role: ROLES.ADMIN,
   });
-  sendSuccess(res, 'Admin created successfully', { user, loginUrl }, 201);
+  const message = emailSent
+    ? 'Admin created successfully'
+    : 'Admin created, but the welcome email failed to send. Please share the login details manually or reset the password.';
+  sendSuccess(res, message, { user, loginUrl, emailSent }, 201);
 });
 
 const createEmployee = asyncHandler(async (req, res) => {
-  const { user, loginUrl } = await userService.createUser(req.user._id, {
+  const { user, loginUrl, emailSent } = await userService.createUser(req.user._id, {
     ...req.body,
     role: ROLES.EMPLOYEE,
   });
-  sendSuccess(res, 'Employee created successfully', { user, loginUrl }, 201);
+  const message = emailSent
+    ? 'Employee created successfully'
+    : 'Employee created, but the welcome email failed to send. Please share the login details manually or reset the password.';
+  sendSuccess(res, message, { user, loginUrl, emailSent }, 201);
 });
 
 const getAdmins = asyncHandler(async (req, res) => {
