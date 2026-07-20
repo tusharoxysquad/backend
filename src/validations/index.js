@@ -178,6 +178,7 @@ const blogBodySchema = Joi.object({
   tags: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()).optional(),
   readTime: Joi.string().optional().allow('', null),
   status: Joi.string().valid('draft', 'published').optional(),
+  publishedAt: Joi.date().iso().optional().allow('', null),
   sections: Joi.array().items(blogSectionSchema).optional(),
   thumbnailUrl: Joi.string().uri().optional().allow('', null),
 });

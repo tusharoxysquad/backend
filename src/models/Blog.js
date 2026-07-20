@@ -17,6 +17,7 @@ const blogSchema = new mongoose.Schema(
     tags: { type: [String], default: [] },
     readTime: { type: String, default: null },
     status: { type: String, enum: ['draft', 'published'], default: 'draft' },
+    publishedAt: { type: Date, default: null },
     sections: [
       {
         title: { type: String, required: true },

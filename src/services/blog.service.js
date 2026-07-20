@@ -3,7 +3,7 @@ const ApiError = require('../utils/apiError');
 const { getPagination, buildPaginationMeta } = require('../utils/pagination');
 const { uploadImage, uploadImageFromUrl, deleteImage } = require('../helpers/cloudinary.helper');
 
-const LIST_SELECT = '_id title slug thumbnail category readTime status createdAt';
+const LIST_SELECT = '_id title slug thumbnail category readTime status publishedAt createdAt';
 
 const _processThumbnail = async (files, data = {}, existing = {}) => {
   if (files?.thumbnail?.[0]) {
@@ -17,9 +17,14 @@ const _processThumbnail = async (files, data = {}, existing = {}) => {
   return null;
 };
 
+const _normalizeDates = (data) => {
+  if (data.publishedAt === '') data.publishedAt = null;
+};
+
 const createBlog = async (data, files, userId) => {
   const thumbnail = await _processThumbnail(files, data);
   if (thumbnail) data.thumbnail = thumbnail;
+  _normalizeDates(data);
   data.createdBy = userId;
   data.updatedBy = userId;
   return Blog.create(data);
@@ -52,6 +57,7 @@ const updateBlog = async (id, data, files, userId) => {
   if (!blog) throw ApiError.notFound('Blog not found');
   const thumbnail = await _processThumbnail(files, data, blog);
   if (thumbnail) data.thumbnail = thumbnail;
+  _normalizeDates(data);
   data.updatedBy = userId;
   return Blog.findByIdAndUpdate(id, data, { new: true, runValidators: true }).select('-__v');
 };
