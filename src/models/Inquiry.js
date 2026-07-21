@@ -63,8 +63,8 @@ const inquirySchema = new mongoose.Schema(
     // ── Company Info ────────────────────────────────────────────────────────
     companyName: {
       type: String,
-      required: [true, 'Company name is required'],
       trim: true,
+      default: null,
       maxlength: [150, 'Company name cannot exceed 150 characters'],
     },
     companyWebsite: {
@@ -80,8 +80,8 @@ const inquirySchema = new mongoose.Schema(
     // ── Service & Project ───────────────────────────────────────────────────
     serviceInterestedIn: {
       type: String,
-      required: [true, 'Service interested in is required'],
-      enum: { values: SERVICE_OPTIONS, message: 'Invalid service option' },
+      default: null,
+      enum: { values: [...SERVICE_OPTIONS, null], message: 'Invalid service option' },
     },
     serviceInterestedOther: {
       type: String,
@@ -91,13 +91,13 @@ const inquirySchema = new mongoose.Schema(
     },
     projectTimeline: {
       type: String,
-      required: [true, 'Project timeline is required'],
-      enum: { values: TIMELINE_OPTIONS, message: 'Invalid timeline option' },
+      default: null,
+      enum: { values: [...TIMELINE_OPTIONS, null], message: 'Invalid timeline option' },
     },
     requirementType: {
       type: String,
-      required: [true, 'Requirement type is required'],
-      enum: { values: REQUIREMENT_OPTIONS, message: 'Invalid requirement type' },
+      default: null,
+      enum: { values: [...REQUIREMENT_OPTIONS, null], message: 'Invalid requirement type' },
     },
     requirementTypeOther: {
       type: String,
@@ -107,8 +107,8 @@ const inquirySchema = new mongoose.Schema(
     },
     projectDescription: {
       type: String,
-      required: [true, 'Project description is required'],
       trim: true,
+      default: null,
       maxlength: [3000, 'Project description cannot exceed 3000 characters'],
     },
 
@@ -128,11 +128,7 @@ const inquirySchema = new mongoose.Schema(
     // ── Consent ─────────────────────────────────────────────────────────────
     agreeToContact: {
       type: Boolean,
-      required: [true, 'You must agree to be contacted'],
-      validate: {
-        validator: (value) => value === true,
-        message: 'You must agree to be contacted.',
-      },
+      default: null,
     },
 
     // ── Document Upload ─────────────────────────────────────────────────────

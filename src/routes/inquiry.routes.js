@@ -12,8 +12,8 @@ const ApiError = require('../utils/apiError');
 
 // ── Rate limiter ──────────────────────────────────────────────────────────────
 const inquiryLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many submissions. Please try again later.' },
@@ -73,39 +73,25 @@ const inquirySchema = Joi.object({
   designation: Joi.string().max(100).optional().allow('', null),
 
   // Company
-  companyName: Joi.string().max(150).required(),
-  companyWebsite: Joi.string()
-    .uri({ scheme: ['http', 'https'] })
-    .optional()
-    .allow('', null),
+  companyName: Joi.string().max(150).optional().allow('', null),
+  companyWebsite: Joi.string().uri({ scheme: ['http', 'https'] }).optional().allow('', null),
 
   // Service
-  serviceInterestedIn: Joi.string().valid(...SERVICE_OPTIONS).required(),
-  serviceInterestedOther: Joi.when('serviceInterestedIn', {
-    is: 'Other',
-    then: Joi.string().max(200).required().messages({ 'any.required': 'Please specify the service you are interested in' }),
-    otherwise: Joi.string().max(200).optional().allow('', null),
-  }),
+  serviceInterestedIn: Joi.string().valid(...SERVICE_OPTIONS).optional().allow('', null),
+  serviceInterestedOther: Joi.string().max(200).optional().allow('', null),
 
   // Project
-  projectTimeline: Joi.string().valid(...TIMELINE_OPTIONS).required(),
-  requirementType: Joi.string().valid(...REQUIREMENT_OPTIONS).required(),
+  projectTimeline: Joi.string().valid(...TIMELINE_OPTIONS).optional().allow('', null),
+  requirementType: Joi.string().valid(...REQUIREMENT_OPTIONS).optional().allow('', null),
   requirementTypeOther: Joi.string().max(200).optional().allow('', null),
-  projectDescription: Joi.string().max(3000).required(),
+  projectDescription: Joi.string().max(3000).optional().allow('', null),
 
   // Discovery
   heardAboutUs: Joi.string().max(100).optional().allow('', null),
-  heardAboutUsOther: Joi.when('heardAboutUs', {
-    is: 'Other',
-    then: Joi.string().max(200).required().messages({ 'any.required': 'Please specify how you heard about us' }),
-    otherwise: Joi.string().max(200).optional().allow('', null),
-  }),
+  heardAboutUsOther: Joi.string().max(200).optional().allow('', null),
 
   // Consent
-  agreeToContact: Joi.boolean().valid(true).required().messages({
-    'any.only': 'You must agree to be contacted',
-    'any.required': 'You must agree to be contacted',
-  }),
+  agreeToContact: Joi.boolean().optional(),
 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
