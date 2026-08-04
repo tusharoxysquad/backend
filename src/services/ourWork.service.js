@@ -31,7 +31,8 @@ const getAllOurWork = async (query) => {
     filter.title = new RegExp(query.search, 'i');
   }
 
-  const sort = query.sort ? { [query.sort]: query.order === 'asc' ? 1 : -1 } : { createdAt: -1 };
+
+  const sort = query.sort ? { [query.sort]: query.order === 'asc' ? 1 : -1 } : { publishedAt: -1, createdAt: -1 };
 
   const [data, total] = await Promise.all([
     OurWork.find(filter).sort(sort).skip(skip).limit(limit).select('-__v'),

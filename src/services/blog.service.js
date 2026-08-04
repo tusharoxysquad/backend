@@ -39,7 +39,7 @@ const getBlogs = async (query) => {
   if (query.search) filter.title = new RegExp(query.search, 'i');
 
   const [data, total] = await Promise.all([
-    Blog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).select(LIST_SELECT),
+    Blog.find(filter).sort({ publishedAt: -1, createdAt: -1 }).skip(skip).limit(limit).select(LIST_SELECT),
     Blog.countDocuments(filter),
   ]);
 

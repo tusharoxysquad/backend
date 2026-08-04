@@ -12,6 +12,7 @@ const ourWorkSchema = new mongoose.Schema(
       imageUrl: { type: String, default: null },
       publicId: { type: String, default: null },
     },
+    publishedAt: { type: Date, default: null },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },

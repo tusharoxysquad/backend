@@ -64,7 +64,7 @@ const getAllCaseStudies = async (query) => {
     filter.$or = [{ title: regex }, { clientName: regex }, { 'hero.tags': regex }];
   }
 
-  const sort = query.sort ? { [query.sort]: query.order === 'asc' ? 1 : -1 } : { createdAt: -1 };
+  const sort = query.sort ? { [query.sort]: query.order === 'asc' ? 1 : -1 } : { publishedAt: -1, createdAt: -1 };
 
   const [data, total] = await Promise.all([
     CaseStudy.find(filter).sort(sort).skip(skip).limit(limit).select('-__v'),

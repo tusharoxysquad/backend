@@ -28,6 +28,7 @@ const caseStudySchema = new mongoose.Schema(
     testimonials: { type: [mongoose.Schema.Types.Mixed], default: [] },
     gallery: { type: [{ ...imageField() }], default: [] },
     figmaScreens: { type: [{ ...imageField() }], default: [] },
+    publishedAt: { type: Date, default: null },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
