@@ -18,7 +18,7 @@ const { authLimiter, otpLimiter } = require('../middleware/rateLimiter');
 
 // ─── Public ───────────────────────────────────────────────────────────────────
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
-router.post('/verify-otp', otpLimiter, validate(verifyOtpSchema), authController.verifyOtp);
+router.post('/verify-otp', validate(verifyOtpSchema), authController.verifyOtp);
 router.post('/resend-otp', otpLimiter, validate(resendOtpSchema), authController.resendOtp);
 
 // ─── One-time setup (no auth — blocked internally if SUPER_ADMIN exists) ──────
