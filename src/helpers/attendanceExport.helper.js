@@ -20,7 +20,20 @@ const CELL_BORDER = {
 
 const formatTime = (date) => {
   if (!date) return '—';
-  return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const d = new Date(date);
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const h = hours % 12 || 12;
+  const m = String(minutes).padStart(2, '0');
+  return `${h}:${m} ${ampm}`;
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${String(d.getUTCDate()).padStart(2, '0')} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 };
 
 const headerCell = (text) =>
@@ -58,10 +71,10 @@ const buildAttendanceDocx = async ({ title, subtitle, records, showEmployeeColum
     const department = r.employeeId?.department || '—';
     const cells = [
       ...(showEmployeeColumn ? [bodyCell(employee), bodyCell(department)] : []),
-      bodyCell(r.date),
+      bodyCell(formatDate(r.date)),
       bodyCell(formatTime(r.checkInTime)),
       bodyCell(formatTime(r.checkOutTime)),
-      bodyCell(r.totalWorkedHours != null ? r.totalWorkedHours : '—'),
+      bodyCell(r.totalWorkedHours != null ? `${Math.floor(r.totalWorkedHours)}h ${Math.round((r.totalWorkedHours % 1) * 60)}m` : '—'),
       bodyCell(r.attendanceStatus),
       bodyCell(r.approvalStatus),
     ];
