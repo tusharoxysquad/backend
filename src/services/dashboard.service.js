@@ -14,10 +14,10 @@ const fmtHours = (totalHours) => {
   return `${h}h ${m}m`;
 };
 
-// Format Date to "09:07 AM"
+// Return ISO string so the frontend can format in the user's local timezone
 const fmtTime = (date) => {
   if (!date) return null;
-  return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return new Date(date).toISOString();
 };
 
 // Count working days between two dates (Mon–Fri) inclusive
