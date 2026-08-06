@@ -288,6 +288,38 @@ const getHistoryForExport = async (employeeId, query) => {
   return Attendance.find(filter).sort({ date: -1 }).limit(EXPORT_LIMIT);
 };
 
+const BREAK_LIMIT_MINUTES = 60;
+
+const startBreak = async (employeeId) => {
+  const today = toDateString();
+  const attendance = await Attendance.findOne({ employeeId, date: today });
+  if (!attendance) throw ApiError.notFound('No check-in found for today');
+  if (attendance.checkOutTime) throw ApiError.conflict('Already checked out');
+
+  const activeBreak = attendance.breaks.find((b) => !b.endTime);
+  if (activeBreak) throw ApiError.conflict('Break already in progress');
+
+  attendance.breaks.push({ startTime: new Date() });
+  await attendance.save();
+  return attendance;
+};
+
+const endBreak = async (employeeId, { auto = false } = {}) => {
+  const today = toDateString();
+  const attendance = await Attendance.findOne({ employeeId, date: today });
+  if (!attendance) throw ApiError.notFound('No check-in found for today');
+
+  const activeBreak = attendance.breaks.find((b) => !b.endTime);
+  if (!activeBreak) throw ApiError.notFound('No active break found');
+
+  const endTime = new Date();
+  const duration = Math.round((endTime - activeBreak.startTime) / 60000);
+  activeBreak.endTime = endTime;
+  activeBreak.duration = duration;
+  await attendance.save();
+  return attendance;
+};
+
 const markAbsent = async (date) => {
   const targetDate = date || toDateString();
 
@@ -359,6 +391,8 @@ const autoCheckout = async () => {
 module.exports = {
   checkIn,
   checkOut,
+  startBreak,
+  endBreak,
   getTodayAttendance,
   getHistory,
   getMonthlyAttendance,

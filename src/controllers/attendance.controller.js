@@ -26,6 +26,16 @@ const checkOut = asyncHandler(async (req, res) => {
   sendSuccess(res, 'Checked out successfully', attendance);
 });
 
+const startBreak = asyncHandler(async (req, res) => {
+  const attendance = await attendanceService.startBreak(req.user._id);
+  sendSuccess(res, 'Break started', attendance);
+});
+
+const endBreak = asyncHandler(async (req, res) => {
+  const attendance = await attendanceService.endBreak(req.user._id);
+  sendSuccess(res, 'Break ended', attendance);
+});
+
 const getTodayAttendance = asyncHandler(async (req, res) => {
   const attendance = await attendanceService.getTodayAttendance(req.user._id);
   sendSuccess(res, 'Today attendance fetched', attendance);
@@ -113,6 +123,8 @@ const exportMyAttendance = asyncHandler(async (req, res) => {
 module.exports = {
   checkIn,
   checkOut,
+  startBreak,
+  endBreak,
   getTodayAttendance,
   getHistory,
   getMonthlyAttendance,

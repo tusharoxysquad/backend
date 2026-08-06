@@ -59,6 +59,13 @@ const attendanceSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    breaks: [
+      {
+        startTime: { type: Date, required: true },
+        endTime:   { type: Date, default: null },
+        duration:  { type: Number, default: 0 }, // minutes
+      },
+    ],
   },
   { timestamps: true }
 );

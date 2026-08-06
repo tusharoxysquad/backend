@@ -11,6 +11,8 @@ router.use(verifyJWT);
 // Employee routes
 router.post('/check-in', attendanceController.checkIn);
 router.post('/check-out', attendanceController.checkOut);
+router.post('/break/start', attendanceController.startBreak);
+router.post('/break/end', attendanceController.endBreak);
 router.get('/today', attendanceController.getTodayAttendance);
 router.get('/history', attendanceController.getHistory);
 router.get('/history/export', attendanceController.exportMyAttendance);
