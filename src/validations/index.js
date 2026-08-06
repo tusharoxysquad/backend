@@ -117,6 +117,17 @@ const rejectSchema = Joi.object({
   rejectionReason: Joi.string().min(3).max(300).required(),
 });
 
+// WFH
+const applyWfhSchema = Joi.object({
+  fromDate: Joi.date().iso().required(),
+  toDate:   Joi.date().iso().min(Joi.ref('fromDate')).required(),
+  reason:   Joi.string().min(5).max(500).required(),
+});
+
+const rejectWfhSchema = Joi.object({
+  rejectionReason: Joi.string().min(3).max(300).required(),
+});
+
 // Attendance rejection
 const attendanceRejectSchema = Joi.object({
   rejectionReason: Joi.string().min(3).max(300).required(),
@@ -221,6 +232,8 @@ const updateCaseStudySchema = caseStudyBodySchema.fork(['title'], (f) => f.optio
 
 module.exports = {
   validate,
+  applyWfhSchema,
+  rejectWfhSchema,
   loginSchema,
   changePasswordSchema,
   verifyOtpSchema,

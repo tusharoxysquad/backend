@@ -79,6 +79,7 @@ const getAttendanceOverviewForUser = async (userId, now = new Date()) => {
     yesterdayWorkedHours: fmtHours(yesterdayAttendance?.totalWorkedHours || 0),
     shiftTiming: '10:00 AM - 7:00 PM',
     lateArrival: todayAttendance?.lateArrival || false,
+    breakUsed: (todayAttendance?.breaks?.length ?? 0) > 0,
   };
 };
 
@@ -208,6 +209,7 @@ const getEmployeeDashboard = async (employeeId) => {
     yesterdayWorkedHours: fmtHours(yesterdayAttendance?.totalWorkedHours || 0),
     shiftTiming: '10:00 AM - 7:00 PM',
     lateArrival: todayAttendance?.lateArrival || false,
+    breakUsed: (todayAttendance?.breaks?.length ?? 0) > 0,
   };
 
   // ── Statistics ───────────────────────────────────────────────────────────────

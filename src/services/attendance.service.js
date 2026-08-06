@@ -296,8 +296,7 @@ const startBreak = async (employeeId) => {
   if (!attendance) throw ApiError.notFound('No check-in found for today');
   if (attendance.checkOutTime) throw ApiError.conflict('Already checked out');
 
-  const activeBreak = attendance.breaks.find((b) => !b.endTime);
-  if (activeBreak) throw ApiError.conflict('Break already in progress');
+  if (attendance.breaks.length > 0) throw ApiError.conflict('You have already used your break for today');
 
   attendance.breaks.push({ startTime: new Date() });
   await attendance.save();
