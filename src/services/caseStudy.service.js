@@ -85,12 +85,50 @@ const updateCaseStudy = async (id, data, files, userId) => {
   if (!cs) throw ApiError.notFound('Case study not found');
 
   const imageUpdates = await _processImages(files, data, cs);
-  if (imageUpdates['hero.bannerImage']) data.hero = { ...data.hero, bannerImage: imageUpdates['hero.bannerImage'] };
-  if (imageUpdates.gallery) data.gallery = [...(cs.gallery || []), ...imageUpdates.gallery];
-  if (imageUpdates.figmaScreens) data.figmaScreens = [...(cs.figmaScreens || []), ...imageUpdates.figmaScreens];
 
-  data.updatedBy = userId;
-  return CaseStudy.findByIdAndUpdate(id, data, { new: true, runValidators: true }).select('-__v');
+  // Build a $set payload using dot-notation to avoid overwriting unrelated fields
+  const setPayload = {};
+
+  const scalarFields = ['title', 'clientName', 'industry', 'publishedAt', 'overview', 'brief', 'challenge', 'solution', 'technologyStack', 'features', 'results', 'testimonials', 'target_audience'];
+  scalarFields.forEach((field) => {
+    if (data[field] !== undefined) setPayload[field] = data[field];
+  });
+
+  // Merge hero text fields with existing bannerImage so it's never wiped
+  if (data.hero !== undefined) {
+    const existingBanner = cs.hero?.bannerImage;
+    setPayload['hero.title']       = data.hero.title       ?? cs.hero?.title       ?? '';
+    setPayload['hero.subtitle']    = data.hero.subtitle    ?? cs.hero?.subtitle    ?? '';
+    setPayload['hero.description'] = data.hero.description ?? cs.hero?.description ?? '';
+    setPayload['hero.tags']        = data.hero.tags        ?? cs.hero?.tags        ?? [];
+    // Only update bannerImage if a new one was uploaded; otherwise keep existing
+    if (imageUpdates['hero.bannerImage']) {
+      setPayload['hero.bannerImage'] = imageUpdates['hero.bannerImage'];
+    } else if (existingBanner) {
+      setPayload['hero.bannerImage'] = existingBanner;
+    }
+  } else if (imageUpdates['hero.bannerImage']) {
+    setPayload['hero.bannerImage'] = imageUpdates['hero.bannerImage'];
+  }
+
+  // Handle figma screens: keep existing ones that weren't removed + append new uploads
+  const existingFigmaPublicIds = data.existingFigmaScreens
+    ? (Array.isArray(data.existingFigmaScreens) ? data.existingFigmaScreens : JSON.parse(data.existingFigmaScreens))
+    : null;
+
+  if (existingFigmaPublicIds !== null) {
+    const keptScreens = (cs.figmaScreens || []).filter((s) => existingFigmaPublicIds.includes(s.publicId));
+    const removedScreens = (cs.figmaScreens || []).filter((s) => !existingFigmaPublicIds.includes(s.publicId));
+    if (removedScreens.length) await Promise.all(removedScreens.map((s) => deleteImage(s.publicId)));
+    const newScreens = imageUpdates.figmaScreens || [];
+    setPayload.figmaScreens = [...keptScreens, ...newScreens];
+  } else if (imageUpdates.figmaScreens) {
+    setPayload.figmaScreens = [...(cs.figmaScreens || []), ...imageUpdates.figmaScreens];
+  }
+
+  setPayload.updatedBy = userId;
+
+  return CaseStudy.findByIdAndUpdate(id, { $set: setPayload }, { new: true, runValidators: true }).select('-__v');
 };
 
 const deleteCaseStudy = async (id) => {
