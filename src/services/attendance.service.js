@@ -97,7 +97,7 @@ const getHistory = async (employeeId, query) => {
   const filter = { ...buildAttendanceFilter(query), employeeId };
 
   const [records, total] = await Promise.all([
-    Attendance.find(filter).sort({ date: -1 }).skip(skip).limit(limit),
+    Attendance.find(filter).populate('approvedBy', 'name').sort({ date: -1 }).skip(skip).limit(limit),
     Attendance.countDocuments(filter),
   ]);
 
@@ -114,7 +114,7 @@ const getMonthlyAttendance = async (employeeId, year, month) => {
   const monthEnd = new Date(y, m, 0, 23, 59, 59, 999);
 
   const [records, leaves] = await Promise.all([
-    Attendance.find({ employeeId, date: { $gte: start, $lte: end } }).sort({ date: 1 }),
+    Attendance.find({ employeeId, date: { $gte: start, $lte: end } }).populate('approvedBy', 'name').sort({ date: 1 }),
     Leave.find({
       employeeId,
       status: 'APPROVED',
@@ -259,6 +259,7 @@ const getAllUsersAttendance = async (query) => {
   const [records, total] = await Promise.all([
     Attendance.find(filter)
       .populate('employeeId', 'name email department designation role reportingAdmin')
+      .populate('approvedBy', 'name')
       .sort({ date: -1 })
       .skip(skip)
       .limit(limit),
@@ -276,6 +277,7 @@ const getAllUsersAttendanceForExport = async (query) => {
   const filter = buildAttendanceFilter(query);
   return Attendance.find(filter)
     .populate('employeeId', 'name email department designation role reportingAdmin')
+    .populate('approvedBy', 'name')
     .sort({ date: -1 })
     .limit(EXPORT_LIMIT);
 };
