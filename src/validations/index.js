@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { ROLES, LEAVE_TYPE, LEAVE_SESSION } = require('../constants');
+const { ROLES, LEAVE_TYPE, LEAVE_SESSION, JOB_TYPE, JOB_STATUS } = require('../constants');
 
 const validate = (schema) => (req, res, next) => {
   const { error } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
@@ -230,6 +230,24 @@ const caseStudyBodySchema = Joi.object({
 
 const updateCaseStudySchema = caseStudyBodySchema.fork(['title'], (f) => f.optional());
 
+// Job
+const createJobSchema = Joi.object({
+  title:                    Joi.string().min(2).max(200).required(),
+  position:                 Joi.string().min(2).max(200).required(),
+  location:                 Joi.string().min(2).max(200).required(),
+  jobType:                  Joi.string().valid(...Object.values(JOB_TYPE)).required(),
+  experience:               Joi.string().min(1).max(100).required(),
+  description:              Joi.string().min(10).required(),
+  keyRequirements:          Joi.array().items(Joi.string()).optional(),
+  preferredQualifications:  Joi.array().items(Joi.string()).optional(),
+  status:                   Joi.string().valid(...Object.values(JOB_STATUS)).required(),
+});
+
+const updateJobSchema = createJobSchema.fork(
+  ['title', 'position', 'location', 'jobType', 'experience', 'description', 'status'],
+  (f) => f.optional()
+);
+
 module.exports = {
   validate,
   applyWfhSchema,
@@ -257,5 +275,7 @@ module.exports = {
   updateOurWorkSchema,
   caseStudyBodySchema,
   updateCaseStudySchema,
+  createJobSchema,
+  updateJobSchema,
   parseJsonFields,
 };

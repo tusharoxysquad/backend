@@ -42,6 +42,21 @@ const LEAVE_STATUS = {
   CANCELLED: 'CANCELLED',
 };
 
+// Job Types
+const JOB_TYPE = {
+  FULL_TIME:   'Full Time',
+  PART_TIME:   'Part Time',
+  INTERNSHIP:  'Internship',
+  CONTRACT:    'Contract',
+};
+
+// Job Statuses
+const JOB_STATUS = {
+  ACTIVE:   'Active',
+  INACTIVE: 'Inactive',
+  CLOSED:   'Closed',
+};
+
 // Shift duration in hours
 const SHIFT_HOURS = 9;
 
@@ -71,6 +86,8 @@ module.exports = {
   LEAVE_TYPE,
   LEAVE_SESSION,
   LEAVE_STATUS,
+  JOB_TYPE,
+  JOB_STATUS,
   SHIFT_HOURS,
   PAGINATION,
   APP_URLS,
