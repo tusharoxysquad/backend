@@ -298,14 +298,18 @@ const startBreak = async (employeeId) => {
   if (!attendance) throw ApiError.notFound('No check-in found for today');
   if (attendance.checkOutTime) throw ApiError.conflict('Already checked out');
 
-  if (attendance.breaks.length > 0) throw ApiError.conflict('You have already used your break for today');
+  // Block if there is already a completed break or an active one
+  const hasCompletedBreak = attendance.breaks.some((b) => b.endTime);
+  if (hasCompletedBreak) throw ApiError.conflict('You have already used your break for today');
+  const hasActiveBreak = attendance.breaks.some((b) => !b.endTime);
+  if (hasActiveBreak) throw ApiError.conflict('A break is already in progress');
 
-  attendance.breaks.push({ startTime: new Date() });
+  attendance.breaks.push({ startTime: new Date(), approvalStatus: 'PENDING' });
   await attendance.save();
   return attendance;
 };
 
-const endBreak = async (employeeId, { auto = false } = {}) => {
+const endBreak = async (employeeId) => {
   const today = toDateString();
   const attendance = await Attendance.findOne({ employeeId, date: today });
   if (!attendance) throw ApiError.notFound('No check-in found for today');
@@ -318,6 +322,65 @@ const endBreak = async (employeeId, { auto = false } = {}) => {
   activeBreak.endTime = endTime;
   activeBreak.duration = duration;
   await attendance.save();
+  return attendance;
+};
+
+const approveBreak = async (attendanceId, breakId, approverId, approverRole) => {
+  const attendance = await Attendance.findById(attendanceId).populate('employeeId', 'role reportingAdmin');
+  if (!attendance) throw ApiError.notFound('Attendance record not found');
+
+  if (approverRole === ROLES.ADMIN) {
+    const employee = attendance.employeeId;
+    if (String(employee.reportingAdmin) !== String(approverId)) {
+      throw ApiError.forbidden('You can only approve breaks for your team members');
+    }
+  }
+
+  const brk = attendance.breaks.id(breakId);
+  if (!brk) throw ApiError.notFound('Break not found');
+  if (brk.approvalStatus !== 'PENDING') throw ApiError.badRequest('Break is not in pending state');
+
+  brk.approvalStatus = 'APPROVED';
+  brk.approvedBy = approverId;
+  brk.approvedAt = new Date();
+  await attendance.save();
+
+  await notify(
+    attendance.employeeId._id,
+    'Break Approved',
+    `Your break on ${attendance.date} has been approved.`
+  );
+
+  return attendance;
+};
+
+const rejectBreak = async (attendanceId, breakId, approverId, approverRole, rejectionReason) => {
+  const attendance = await Attendance.findById(attendanceId).populate('employeeId', 'role reportingAdmin');
+  if (!attendance) throw ApiError.notFound('Attendance record not found');
+
+  if (approverRole === ROLES.ADMIN) {
+    const employee = attendance.employeeId;
+    if (String(employee.reportingAdmin) !== String(approverId)) {
+      throw ApiError.forbidden('You can only reject breaks for your team members');
+    }
+  }
+
+  const brk = attendance.breaks.id(breakId);
+  if (!brk) throw ApiError.notFound('Break not found');
+  if (brk.approvalStatus !== 'PENDING') throw ApiError.badRequest('Break is not in pending state');
+
+  brk.approvalStatus = 'REJECTED';
+  brk.approvedBy = approverId;
+  brk.approvedAt = new Date();
+  brk.rejectionReason = rejectionReason || null;
+  await attendance.save();
+
+  await notify(
+    attendance.employeeId._id,
+    'Break Rejected',
+    `Your break on ${attendance.date} was rejected.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`
+  );
+
   return attendance;
 };
 
@@ -394,6 +457,8 @@ module.exports = {
   checkOut,
   startBreak,
   endBreak,
+  approveBreak,
+  rejectBreak,
   getTodayAttendance,
   getHistory,
   getMonthlyAttendance,

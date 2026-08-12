@@ -36,6 +36,27 @@ const endBreak = asyncHandler(async (req, res) => {
   sendSuccess(res, 'Break ended', attendance);
 });
 
+const approveBreak = asyncHandler(async (req, res) => {
+  const attendance = await attendanceService.approveBreak(
+    req.params.attendanceId,
+    req.params.breakId,
+    req.user._id,
+    req.user.role
+  );
+  sendSuccess(res, 'Break approved successfully', attendance);
+});
+
+const rejectBreak = asyncHandler(async (req, res) => {
+  const attendance = await attendanceService.rejectBreak(
+    req.params.attendanceId,
+    req.params.breakId,
+    req.user._id,
+    req.user.role,
+    req.body.rejectionReason
+  );
+  sendSuccess(res, 'Break rejected successfully', attendance);
+});
+
 const getTodayAttendance = asyncHandler(async (req, res) => {
   const attendance = await attendanceService.getTodayAttendance(req.user._id);
   sendSuccess(res, 'Today attendance fetched', attendance);
@@ -125,6 +146,8 @@ module.exports = {
   checkOut,
   startBreak,
   endBreak,
+  approveBreak,
+  rejectBreak,
   getTodayAttendance,
   getHistory,
   getMonthlyAttendance,

@@ -71,6 +71,8 @@ const getAttendanceOverviewForUser = async (userId, now = new Date()) => {
     ? fmtHours((now - new Date(todayAttendance.checkInTime)) / (1000 * 60 * 60))
     : '0h 0m';
 
+  const activeBreak = todayAttendance?.breaks?.find((b) => !b.endTime) ?? null;
+
   return {
     currentStatus,
     checkInTime: fmtTime(todayAttendance?.checkInTime),
@@ -79,7 +81,14 @@ const getAttendanceOverviewForUser = async (userId, now = new Date()) => {
     yesterdayWorkedHours: fmtHours(yesterdayAttendance?.totalWorkedHours || 0),
     shiftTiming: '10:00 AM - 7:00 PM',
     lateArrival: todayAttendance?.lateArrival || false,
-    breakUsed: (todayAttendance?.breaks?.length ?? 0) > 0,
+    breakUsed: (todayAttendance?.breaks ?? []).some((b) => b.endTime),
+    activeBreak: activeBreak
+      ? {
+          _id: activeBreak._id,
+          startTime: fmtTime(activeBreak.startTime),
+          approvalStatus: activeBreak.approvalStatus,
+        }
+      : null,
   };
 };
 
@@ -201,6 +210,8 @@ const getEmployeeDashboard = async (employeeId) => {
     ? fmtHours((now - new Date(todayAttendance.checkInTime)) / (1000 * 60 * 60))
     : '0h 0m';
 
+  const activeBreak = todayAttendance?.breaks?.find((b) => !b.endTime) ?? null;
+
   const attendanceOverview = {
     currentStatus,
     checkInTime: fmtTime(todayAttendance?.checkInTime),
@@ -209,7 +220,15 @@ const getEmployeeDashboard = async (employeeId) => {
     yesterdayWorkedHours: fmtHours(yesterdayAttendance?.totalWorkedHours || 0),
     shiftTiming: '10:00 AM - 7:00 PM',
     lateArrival: todayAttendance?.lateArrival || false,
-    breakUsed: (todayAttendance?.breaks?.length ?? 0) > 0,
+    // breakUsed = a break has been completed (endTime set); active break is NOT "used" yet
+    breakUsed: (todayAttendance?.breaks ?? []).some((b) => b.endTime),
+    activeBreak: activeBreak
+      ? {
+          _id: activeBreak._id,
+          startTime: fmtTime(activeBreak.startTime),
+          approvalStatus: activeBreak.approvalStatus,
+        }
+      : null,
   };
 
   // ── Statistics ───────────────────────────────────────────────────────────────

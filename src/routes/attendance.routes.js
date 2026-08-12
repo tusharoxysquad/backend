@@ -55,5 +55,15 @@ router.patch(
   validate(attendanceRejectSchema),
   attendanceController.rejectAttendance
 );
+router.patch(
+  '/:attendanceId/breaks/:breakId/approve',
+  authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  attendanceController.approveBreak
+);
+router.patch(
+  '/:attendanceId/breaks/:breakId/reject',
+  authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  attendanceController.rejectBreak
+);
 
 module.exports = router;

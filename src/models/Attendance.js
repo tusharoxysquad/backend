@@ -61,9 +61,13 @@ const attendanceSchema = new mongoose.Schema(
     },
     breaks: [
       {
-        startTime: { type: Date, required: true },
-        endTime:   { type: Date, default: null },
-        duration:  { type: Number, default: 0 }, // minutes
+        startTime:           { type: Date, required: true },
+        endTime:             { type: Date, default: null },
+        duration:            { type: Number, default: 0 }, // minutes
+        approvalStatus:      { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' },
+        approvedBy:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        approvedAt:          { type: Date, default: null },
+        rejectionReason:     { type: String, default: null },
       },
     ],
   },
