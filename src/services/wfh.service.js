@@ -51,6 +51,10 @@ const getAllWfhRequests = async (requesterId, requesterRole, query) => {
   if (requesterRole === ROLES.ADMIN) {
     const teamMembers = await User.find({ reportingAdmin: requesterId }).select('_id');
     filter.employeeId = { $in: teamMembers.map((u) => u._id) };
+  } else if (requesterRole === ROLES.SUPER_ADMIN && query.adminId) {
+    // Super admin filtering by a specific admin's team
+    const teamMembers = await User.find({ reportingAdmin: query.adminId }).select('_id');
+    filter.employeeId = { $in: teamMembers.map((u) => u._id) };
   }
 
   if (query.status) filter.status = query.status;
